@@ -83,7 +83,7 @@ export class AddressUseCase {
         return { typeRoom: updatedAddress };
     }
 
-    async delete({ id }: EditDeleteUseCaseRequest) {
+    async delete(id: string) {
         const bodySchemaValidation = z.object({
             id: z.string()
         });

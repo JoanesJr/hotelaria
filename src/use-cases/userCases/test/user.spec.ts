@@ -92,7 +92,7 @@ describe('DeleteUser Use Case', () => {
             privilege: 'basic'
         });
 
-        const userDelete = await sut.delete({ id: user.id });
+        const userDelete = await sut.delete(user.id);
         const newUsers = await sut.findAll();
         const existsUser = newUsers.filter((user) => user.id === userDelete.user.id);
 
@@ -101,7 +101,7 @@ describe('DeleteUser Use Case', () => {
 
     it('should not be delete not exists user id', async () => {
 
-        await expect(() => sut.delete({ id: 'id-not-found' })).rejects.toBeInstanceOf(DataNotFoundError);
+        await expect(() => sut.delete('id-not-found')).rejects.toBeInstanceOf(DataNotFoundError);
     });
 });
 

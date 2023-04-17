@@ -77,7 +77,7 @@ export class UserUseCase {
 
     }
 
-    async delete({ id }: EditDeleteUseCaseRequest) {
+    async delete(id: string) {
         const bodySchemaValidation = z.object({
             id: z.string()
         });

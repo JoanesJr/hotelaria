@@ -48,7 +48,7 @@ describe('DeleteTypeRoom Use Case', () => {
             name: 'Category One'
         });
 
-        const typeRoomDelete = await sut.delete({ id: typeRoom.id });
+        const typeRoomDelete = await sut.delete(typeRoom.id);
         const newTypeRooms = await sut.findAll();
         const existsTypeRoom = newTypeRooms.filter((type) => type.id === typeRoomDelete.id);
 
@@ -57,7 +57,7 @@ describe('DeleteTypeRoom Use Case', () => {
 
     it('should not be delete not exists typeRoom id', async () => {
 
-        await expect(() => sut.delete({ id: 'id-not-found' })).rejects.toBeInstanceOf(DataNotFoundError);
+        await expect(() => sut.delete('id-not-found')).rejects.toBeInstanceOf(DataNotFoundError);
     });
 });
 

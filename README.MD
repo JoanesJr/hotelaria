@@ -1,4 +1,4 @@
-[ ] - Cadastrar usuario
+[X] - Cadastrar usuario
 [X] - Permição de administrador ou usuário
 [ ] - Usuário fazer login
 [X] - Ter informações de nome, endereço, cpf, cep e nascimento do usuário.

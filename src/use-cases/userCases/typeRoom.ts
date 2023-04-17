@@ -53,7 +53,7 @@ export class TypeRoomUseCase {
 
     }
 
-    async delete({ id }: EditDeleteUseCaseRequest) {
+    async delete(id: string) {
         const bodySchemaValidation = z.object({
             id: z.string()
         });

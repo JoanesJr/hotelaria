@@ -142,7 +142,7 @@ describe('DeleteUser Use Case', () => {
 
         const { address } = await sutAddress.register(data);
 
-        const addressDelete = await sutAddress.delete({ id: address.id });
+        const addressDelete = await sutAddress.delete(address.id);
         const newAddress = await sutAddress.findAll();
         const existsAddress = newAddress.filter((address) => address.id === addressDelete.id);
 
@@ -151,6 +151,6 @@ describe('DeleteUser Use Case', () => {
 
     it('should not be delete not exists address id', async () => {
 
-        await expect(() => sutAddress.delete({ id: 'id-not-found' })).rejects.toBeInstanceOf(DataNotFoundError);
+        await expect(() => sutAddress.delete('id-not-found')).rejects.toBeInstanceOf(DataNotFoundError);
     });
 });
