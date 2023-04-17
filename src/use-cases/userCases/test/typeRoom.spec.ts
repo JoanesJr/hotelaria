@@ -43,7 +43,7 @@ describe('DeleteTypeRoom Use Case', () => {
         sut = new TypeRoomUseCase(typeRoomRepository);
     });
 
-    it('should be delete user', async () => {
+    it('should be delete typeRoom', async () => {
         const { typeRoom } = await sut.register({
             name: 'Category One'
         });
@@ -55,8 +55,47 @@ describe('DeleteTypeRoom Use Case', () => {
         expect(existsTypeRoom).toHaveLength(0);
     });
 
-    it('should not be delete not exists user id', async () => {
+    it('should not be delete not exists typeRoom id', async () => {
 
         await expect(() => sut.delete({ id: 'id-not-found' })).rejects.toBeInstanceOf(DataNotFoundError);
+    });
+});
+
+describe('UpdateTypeRoom Use Case', () => {
+    beforeEach(() => {
+        typeRoomRepository = new InMemoryTypeRoomRepository();
+        sut = new TypeRoomUseCase(typeRoomRepository);
+    });
+
+    it('should be update user', async () => {
+        const { typeRoom } = await sut.register({
+            name: 'Category One'
+        });
+
+        const typeRoomUpdated = await sut.update(typeRoom.id, {
+            name: 'Joanes'
+        });
+
+        const getTypeRoomUpdated = await sut.findById(typeRoom.id);
+
+        expect(getTypeRoomUpdated.name).toEqual('Joanes');
+    });
+
+    it('should not be update typeRoom when  id not exists', async () => {
+
+        await expect(sut.update('id-not-found', { name: 'Joanes' })).rejects.toBeInstanceOf(DataNotFoundError);
+    });
+
+    it('should not be update typeRoom with same name', async () => {
+        await sut.register({
+            name: 'Category One'
+        });
+
+        const { typeRoom } = await sut.register({
+            name: 'Category Two'
+        });
+
+
+        await expect(sut.update(typeRoom.id, { name: 'Category One' })).rejects.toBeInstanceOf(TypeRoomAlreadyExistsError);
     });
 });

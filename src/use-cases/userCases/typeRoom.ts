@@ -33,7 +33,6 @@ export class TypeRoomUseCase {
         return typeRoom;
     }
 
-
     async register({ name }: RegisterUseCaseRequest): Promise<RegisterUseCaseResponse> {
         const registerValidationSchema = z.object({
             name: z.string().min(3)
@@ -69,7 +68,7 @@ export class TypeRoomUseCase {
 
         const typeRoom = await this.repository.delete(data.id);
 
-        return { typeRoom };
+        return typeRoom;
     }
 
     async update(id: string, data: Prisma.TypeRoomUpdateInput) {
@@ -95,6 +94,6 @@ export class TypeRoomUseCase {
 
         const updatedTypeRoom = await this.repository.update(id, dataTypeRoom);
 
-        return updatedTypeRoom;
+        return { typeRoom: updatedTypeRoom };
     }
 }

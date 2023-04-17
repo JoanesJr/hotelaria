@@ -45,4 +45,26 @@ export class InMemoryAddresssRepository implements AddressRepository {
 
         return address;
     }
+
+    async delete(id: string) {
+        const addresses = this.items.filter((item) => item.id != id);
+        const address = this.items.filter((item) => item.id == id)[0];
+
+        this.items = addresses;
+
+        return address;
+    }
+
+    async update(id: string, data: Prisma.AddressUpdateInput | { id: string, street: string, neighborhood: string, userId: string, created_at: string | Date, cep: string }) {
+
+        const typeRoomOld = this.items.filter(user => user.id == id)[0];
+        const indexAddress = this.items.indexOf(typeRoomOld);
+
+        const mergeObject = Object.assign(typeRoomOld, data);
+
+        this.items[indexAddress] = mergeObject;
+
+        return mergeObject;
+
+    }
 }

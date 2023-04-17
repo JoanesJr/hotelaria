@@ -40,4 +40,25 @@ export class PrismaAddresssRepository implements AddressRepository {
 
         return address;
     }
+
+    async delete(id: string): Promise<Address> {
+        const address = await prisma.address.delete({
+            where: {
+                id
+            }
+        });
+
+        return address;
+    }
+
+    async update(id: string, data: Prisma.AddressUpdateInput): Promise<Address> {
+        const address = await prisma.address.update({
+            data,
+            where: {
+                id
+            }
+        });
+
+        return address;
+    }
 }
