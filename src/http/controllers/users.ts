@@ -85,7 +85,7 @@ class UserController {
     async findById(request: FastifyRequest, reply: FastifyReply) {
 
         try {
-            const id = request.params.id;
+            const id = request.params?.id;
             const registerUseCase = makeUserUseCase();
 
             const user = await registerUseCase.findById(id);

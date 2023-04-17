@@ -49,7 +49,10 @@ model Room {
   id          String   @id @default(uuid())
   name        String
   info        String
+  status      String   @default("aberto")
   typeRoom_id TypeRoom @relation(fields: [typeRoomId], references: [id])
   typeRoomId  String
   created_at  DateTime @default(now())
+
+  @@map("room")
 }
