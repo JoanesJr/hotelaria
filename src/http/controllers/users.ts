@@ -2,6 +2,11 @@ import { makeUserUseCase } from '@/use-cases/factories/make-user-use-case';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 
+export enum MaritalStatus {
+    solteiro = 'solteiro',
+    casado = 'casado',
+}
+
 class UserController {
     async register(request: FastifyRequest, reply: FastifyReply) {
         const registerUserSchema = z.object({
@@ -10,7 +15,9 @@ class UserController {
             cpf: z.string().min(11).max(11),
             password: z.string(),
             privilege: z.string().optional(),
-            birthday: z.string().datetime()
+            birthday: z.string().datetime(),
+            maritalStatus: z.enum(Object.values(MaritalStatus)),
+            cardCar: z.string().optional()
         });
 
         const data = registerUserSchema.parse(request.body);
@@ -36,7 +43,9 @@ class UserController {
             cpf: z.string().min(11).max(11).optional(),
             password: z.string().optional(),
             privilege: z.string().optional(),
-            birthday: z.string().datetime().optional()
+            birthday: z.string().datetime().optional(),
+            maritalStatus: z.enum(Object.values(MaritalStatus)).optional(),
+            cardCar: z.string().optional()
         });
 
         const data = registerUserSchema.parse(request.body);

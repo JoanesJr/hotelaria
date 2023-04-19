@@ -16,7 +16,9 @@ interface RegisterUseCaseRequest {
     password: string
     cpf: string
     birthday: string | Date
-    privilege: string
+    privilege: string,
+    maritalStatus: string,
+    cardCar?: string
 }
 
 interface UseCaseResponse {

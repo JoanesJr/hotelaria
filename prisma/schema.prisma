@@ -18,6 +18,8 @@ model User {
   birthday      DateTime
   password_hash String
   privilege     String    @default("basic")
+  maritalStatus String    @default("solteiro")
+  cardCar       String    @default("")
   created_at    DateTime  @default(now())
   Address       Address[]
 
