@@ -55,7 +55,7 @@ export class InMemoryAddresssRepository implements AddressRepository {
         return address;
     }
 
-    async update(id: string, data: Prisma.AddressUpdateInput | { id: string, street: string, neighborhood: string, userId: string, created_at: string | Date, cep: string }) {
+    async update(id: string, data: Prisma.AddressUpdateInput | { id?: string, street?: string, neighborhood?: string, userId?: string, created_at?: string | Date, cep?: string }) {
 
         const typeRoomOld = this.items.filter(user => user.id == id)[0];
         const indexAddress = this.items.indexOf(typeRoomOld);

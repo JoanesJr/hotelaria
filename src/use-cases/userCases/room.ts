@@ -15,17 +15,19 @@ interface RoomUseCaseResponse {
     room: Room
 }
 
-interface EditDeleteUseCaseRequest {
-    id: string
+enum StatusRoom {
+    aberto = 'Aberto',
+    ocupado = 'Ocupado',
+    indisponivel = 'Indisponivel'
 }
 
 export class RoomUseCase {
     constructor(private readonly repository: RoomRepository) { }
 
     async findAll(): Promise<Room[] | null> {
-        const roomes = await this.repository.findAll();
+        const rooms = await this.repository.findAll();
 
-        return roomes;
+        return rooms;
     }
 
     async findById(id: string): Promise<Room | null> {
@@ -38,24 +40,24 @@ export class RoomUseCase {
     async register(dt: RoomUseCaseRequest): Promise<RoomUseCaseResponse> {
 
         const roomValidationSchema = z.object({
-            street: z.string().min(3),
-            neighborhood: z.string().min(2),
-            cep: z.string(),
-            userId: z.string()
+            name: z.string().min(3),
+            info: z.string().min(5),
+            status: z.enum(Object.values(StatusRoom)),
+            typeRoomId: z.string()
         });
 
         const data = roomValidationSchema.parse(dt);
-        const roomWithSameUser = await this.repository.findByUser(data.userId);
+        const roomWithSameCategory = await this.repository.findByTypeRoom(data.typeRoomId);
 
-        if (roomWithSameUser) {
+        if (roomWithSameCategory) {
             throw new RoomAlreadyExistsError();
         }
 
         const room = await this.repository.create({
-            street: data.street,
-            neighborhood: data.neighborhood,
-            cep: data.cep,
-            userId: data.userId,
+            name: data.name,
+            info: data.info,
+            status: data.status,
+            typeRoomId: data.typeRoomId,
             created_at: new Date()
         });
 
@@ -64,10 +66,10 @@ export class RoomUseCase {
 
     async update(id: string, data: Prisma.RoomUpdateInput) {
         const validationSchema = z.object({
-            street: z.string().min(3).optional(),
-            neighborhood: z.string().min(2).optional(),
-            cep: z.string().optional(),
-            userId: z.string().optional()
+            name: z.string().min(3).optional(),
+            info: z.string().min(5).optional(),
+            status: z.string().optional(),
+            typeRoomId: z.string().optional()
         });
 
         const dataRoom = validationSchema.parse(data);
