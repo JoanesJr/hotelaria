@@ -97,8 +97,35 @@ class UserController {
 
     }
 
+    async findByCpf(request: FastifyRequest, reply: FastifyReply) {
 
+        try {
+            const cpf = request.params?.cpf;
+            const registerUseCase = makeUserUseCase();
 
+            const user = await registerUseCase.findByCpf(cpf);
+
+            return reply.status(200).send(user);
+        } catch (err) {
+            return reply.status(409).send({ message: err.message });
+        }
+
+    }
+
+    async findByEmail(request: FastifyRequest, reply: FastifyReply) {
+
+        try {
+            const email = request.params?.email;
+            const registerUseCase = makeUserUseCase();
+
+            const user = await registerUseCase.findByEmail(email);
+
+            return reply.status(200).send(user);
+        } catch (err) {
+            return reply.status(409).send({ message: err.message });
+        }
+
+    }
 
 }
 

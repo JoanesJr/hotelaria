@@ -68,7 +68,7 @@ export class RoomUseCase {
         const validationSchema = z.object({
             name: z.string().min(3).optional(),
             info: z.string().min(5).optional(),
-            status: z.string().optional(),
+            status: z.enum(Object.values(StatusRoom)).optional(),
             typeRoomId: z.string().optional()
         });
 

@@ -43,6 +43,18 @@ export class UserUseCase {
         return user;
     }
 
+    async findByCpf(cpf: string): Promise<User | null> {
+        const user = await this.usersRepository.findByCpf(cpf);
+
+        return user;
+    }
+
+    async findByEmail(email: string): Promise<User | null> {
+        const user = await this.usersRepository.findByEmail(email);
+
+        return user;
+    }
+
     async register({ name, email, password, cpf, birthday, privilege = 'basic' }: RegisterUseCaseRequest): Promise<UseCaseResponse> {
         const password_hash = await hash(password, 6);
 
@@ -133,4 +145,5 @@ export class UserUseCase {
 
         return updatedUser;
     }
+
 }

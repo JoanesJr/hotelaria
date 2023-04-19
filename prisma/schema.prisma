@@ -56,3 +56,14 @@ model Room {
 
   @@map("room")
 }
+
+model Item {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  info       String
+  price      Float
+  url        String?
+  created_at DateTime @default(now())
+
+  @@map("item")
+}

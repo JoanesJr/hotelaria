@@ -3,6 +3,7 @@ import { userController } from './controllers/users';
 import { addressController } from './controllers/address';
 import { typeRoomController } from './controllers/typeRoom';
 import { roomController } from './controllers/room';
+import { itemController } from './controllers/items';
 
 
 export async function appRoutes(app: FastifyInstance) {
@@ -10,6 +11,8 @@ export async function appRoutes(app: FastifyInstance) {
     app.post('/user', userController.register);
     app.get('/user', userController.findAll);
     app.get('/user/:id', userController.findById);
+    app.get('/user/cpf/:cpf', userController.findByCpf);
+    app.get('/user/email/:email', userController.findByEmail);
     app.patch('/user/:id', userController.update);
     app.delete('/user/:id', userController.delete);
 
@@ -35,4 +38,10 @@ export async function appRoutes(app: FastifyInstance) {
     app.patch('/room/:id', roomController.update);
     app.delete('/room/:id', roomController.delete);
 
+    // item
+    app.post('/item', itemController.register);
+    app.get('/item', itemController.findAll);
+    app.get('/item/:id', itemController.findById);
+    app.patch('/item/:id', itemController.update);
+    app.delete('/item/:id', itemController.delete);
 }
