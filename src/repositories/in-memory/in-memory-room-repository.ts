@@ -1,5 +1,5 @@
 
-import { Room, Prisma, TypeRoom } from '@prisma/client';
+import { Room, Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { RoomRepository } from '../room-repository';
 

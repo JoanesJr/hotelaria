@@ -5,17 +5,17 @@ import { RoomAlreadyExistsError } from '../errors/room-already-exists-error';
 import { DataNotFoundError } from '../errors/data-not-found-error';
 
 interface RoomUseCaseRequest {
-    street: string
-    neighborhood: string
-    cep: string
-    userId: string
+    name: string
+    info: string
+    status: StatusRoom
+    typeRoomId: string
 }
 
 interface RoomUseCaseResponse {
     room: Room
 }
 
-enum StatusRoom {
+export enum StatusRoom {
     aberto = 'Aberto',
     ocupado = 'Ocupado',
     indisponivel = 'Indisponivel'
