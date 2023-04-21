@@ -82,7 +82,7 @@ export class RoomUseCase {
 
         const updatedRoom = await this.repository.update(id, dataRoom);
 
-        return { typeRoom: updatedRoom };
+        return { room: updatedRoom };
     }
 
     async delete(id: string) {

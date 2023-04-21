@@ -143,7 +143,10 @@ export class UserUseCase {
             }
         }
 
-        const updatedUser = await this.usersRepository.update(id, dataUser);
+        const password_hash = dataUser.password ? await hash(dataUser.password, 6) : userExists.password_hash;
+        delete dataUser.password;
+
+        const updatedUser = await this.usersRepository.update(id, { ...dataUser, password_hash });
 
         return updatedUser;
     }

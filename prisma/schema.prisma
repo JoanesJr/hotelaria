@@ -11,17 +11,18 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
+  id            String        @id @default(uuid())
   name          String
-  email         String    @unique
-  cpf           String    @unique
+  email         String        @unique
+  cpf           String        @unique
   birthday      DateTime
   password_hash String
-  privilege     String    @default("basic")
-  maritalStatus String    @default("solteiro")
-  cardCar       String    @default("")
-  created_at    DateTime  @default(now())
+  privilege     String        @default("basic")
+  maritalStatus String        @default("solteiro")
+  cardCar       String        @default("")
+  created_at    DateTime      @default(now())
   Address       Address[]
+  Reservation   Reservation[]
 
   @@map("users")
 }
@@ -48,13 +49,14 @@ model TypeRoom {
 }
 
 model Room {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   name        String
   info        String
-  status      String   @default("aberto")
-  typeRoom_id TypeRoom @relation(fields: [typeRoomId], references: [id])
+  status      String        @default("aberto")
+  typeRoom_id TypeRoom      @relation(fields: [typeRoomId], references: [id])
   typeRoomId  String
-  created_at  DateTime @default(now())
+  created_at  DateTime      @default(now())
+  Reservation Reservation[]
 
   @@map("room")
 }
@@ -68,4 +70,16 @@ model Item {
   created_at DateTime @default(now())
 
   @@map("item")
+}
+
+model Reservation {
+  id         String   @id @default(uuid())
+  user_id    User     @relation(fields: [userId], references: [id])
+  userId     String
+  room_id    Room     @relation(fields: [roomId], references: [id])
+  roomId     String
+  entryDate  DateTime
+  exitDate   DateTime
+  status     String
+  created_at DateTime @default(now())
 }

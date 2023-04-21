@@ -4,6 +4,7 @@ import { addressController } from './controllers/address';
 import { typeRoomController } from './controllers/typeRoom';
 import { roomController } from './controllers/room';
 import { itemController } from './controllers/items';
+import { reservationController } from './controllers/reservation';
 
 
 export async function appRoutes(app: FastifyInstance) {
@@ -44,4 +45,12 @@ export async function appRoutes(app: FastifyInstance) {
     app.get('/item/:id', itemController.findById);
     app.patch('/item/:id', itemController.update);
     app.delete('/item/:id', itemController.delete);
+
+    // reservation
+    app.post('/reservation', reservationController.register);
+    app.get('/reservation', reservationController.findAll);
+    app.get('/reservation/:id', reservationController.findById);
+    app.get('/reservation/exists/:id', reservationController.findReservation);
+    app.patch('/reservation/:id', reservationController.update);
+    app.delete('/reservation/:id', reservationController.delete);
 }

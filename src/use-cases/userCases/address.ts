@@ -80,7 +80,7 @@ export class AddressUseCase {
 
         const updatedAddress = await this.repository.update(id, dataAddress);
 
-        return { typeRoom: updatedAddress };
+        return { address: updatedAddress };
     }
 
     async delete(id: string) {
