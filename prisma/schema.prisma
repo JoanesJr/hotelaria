@@ -73,13 +73,27 @@ model Item {
 }
 
 model Reservation {
-  id         String   @id @default(uuid())
-  user_id    User     @relation(fields: [userId], references: [id])
+  id         String    @id @default(uuid())
+  user_id    User      @relation(fields: [userId], references: [id])
   userId     String
-  room_id    Room     @relation(fields: [roomId], references: [id])
+  room_id    Room      @relation(fields: [roomId], references: [id])
   roomId     String
   entryDate  DateTime
   exitDate   DateTime
   status     String
-  created_at DateTime @default(now())
+  created_at DateTime  @default(now())
+  CheckIn    CheckIn[]
+  CheckOut   CheckOut?
+}
+
+model CheckIn {
+  id             String      @id @default(uuid())
+  id_reservation Reservation @relation(fields: [reservationId], references: [id])
+  reservationId  String      @unique
+}
+
+model CheckOut {
+  id             String      @id @default(uuid())
+  id_reservation Reservation @relation(fields: [reservationId], references: [id])
+  reservationId  String      @unique
 }

@@ -6,6 +6,7 @@ import { StatusReservation } from '@/use-cases/userCases/reservation';
 
 export class InMemoryReservationRepository implements ReservationRepository {
 
+
     public items: Reservation[] = [];
 
     async findReservation(roomId: string, entryDate: string | Date): Promise<Reservation | null> {
@@ -22,6 +23,11 @@ export class InMemoryReservationRepository implements ReservationRepository {
         }
 
         return null;
+
+    }
+
+    async findByUser(userId: string, count?: number) {
+        return count;
 
     }
 

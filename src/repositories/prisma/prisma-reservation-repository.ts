@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { Reservation, Prisma, } from '@prisma/client';
 import { ReservationRepository } from '../reservation-repository';
+import { StatusReservation } from '@/use-cases/userCases/reservation';
 
 export class PrismaReservationRepository implements ReservationRepository {
     async findReservation(roomId: string, entryDate: string | Date): Promise<Reservation> {
@@ -17,6 +18,30 @@ export class PrismaReservationRepository implements ReservationRepository {
         });
 
         return reservartion;
+    }
+
+    async findByUser(userId: string) {
+        const reservartion = await prisma.reservation.findMany({
+            where: {
+                userId: userId,
+                status: {
+                    not: {
+                        equals: StatusReservation.canceled
+                    }
+                }
+            },
+            include: {
+                CheckIn: {
+                    where: {
+                        id: {
+                            not: null
+                        }
+                    }
+                },
+            }
+        });
+
+        return reservartion.length;
     }
 
     async findAll(): Promise<Reservation[] | null> {

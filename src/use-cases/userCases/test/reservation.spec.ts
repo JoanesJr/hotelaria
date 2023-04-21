@@ -34,7 +34,7 @@ describe('MakeReservation Use Case', () => {
         typeRoomRepositroy = new InMemoryTypeRoomRepository();
         userRepository = new InMemoryUsersRepository();
 
-        sutReservation = new ReservationUseCase(reservationRepository);
+        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository);
         sutRoom = new RoomUseCase(roomRepository);
         sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
         sutUser = new UserUseCase(userRepository);
@@ -47,7 +47,8 @@ describe('MakeReservation Use Case', () => {
             password: 'teste1234',
             birthday: '2002-04-30T00:00:00',
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: 'Solteiro'
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -164,6 +165,10 @@ describe('MakeReservation Use Case', () => {
 
         await expect(sutReservation.register(data)).rejects.toBeInstanceOf(ReservationAlreadyExistsError);
     });
+
+    // it('should not be make reservation width more than max reservations to same users config'), () => {
+
+    // };
 });
 
 describe('DeleteReservation Use Case', () => {
@@ -173,7 +178,7 @@ describe('DeleteReservation Use Case', () => {
         typeRoomRepositroy = new InMemoryTypeRoomRepository();
         userRepository = new InMemoryUsersRepository();
 
-        sutReservation = new ReservationUseCase(reservationRepository);
+        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository);
         sutRoom = new RoomUseCase(roomRepository);
         sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
         sutUser = new UserUseCase(userRepository);
@@ -226,7 +231,7 @@ describe('UpdateReservation Use Case', () => {
         typeRoomRepositroy = new InMemoryTypeRoomRepository();
         userRepository = new InMemoryUsersRepository();
 
-        sutReservation = new ReservationUseCase(reservationRepository);
+        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository);
         sutRoom = new RoomUseCase(roomRepository);
         sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
         sutUser = new UserUseCase(userRepository);

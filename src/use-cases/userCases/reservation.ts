@@ -6,6 +6,12 @@ import { DataNotFoundError } from '../errors/data-not-found-error';
 import { differenceInDays } from 'date-fns';
 import { ReservationInvalidError } from '../errors/reservartion-invalid-error';
 import { ReservationLimitError } from '../errors/reservartion-limit-error copy';
+import { RoomRepository } from '@/repositories/room-repository';
+import { UsersRepository } from '@/repositories/users-repository';
+import { RoomNotExistsError } from '../errors/room-not-exists-error';
+import { StatusRoom } from './room';
+import { RoomNotIsAvailablesError } from '../errors/room-not-is-available-error copy';
+import { UserAlreadyExistsError } from '../errors/user-already-exists-error';
 
 export enum StatusReservation {
     notConfirmed = 'Nao Confirmada',
@@ -27,7 +33,66 @@ interface ReservationUseCaseResponse {
 
 
 export class ReservationUseCase {
-    constructor(private readonly repository: ReservationRepository) { }
+    constructor(private readonly repository: ReservationRepository, private readonly roomRepository: RoomRepository, private readonly userRepository: UsersRepository) { }
+
+    private async roomValidation(roomId, type: 'insert' | 'update') {
+        if (type == 'update' && roomId) {
+            const roomExists = await this.roomRepository.findById(roomId);
+
+            if (!roomExists) {
+                throw new RoomNotExistsError();
+            }
+
+            if (roomExists.status != StatusRoom.aberto) {
+                throw new RoomNotIsAvailablesError();
+            }
+        }
+
+        if (type == 'insert') {
+            const roomExists = await this.roomRepository.findById(roomId);
+
+            if (!roomExists) {
+                throw new RoomNotExistsError();
+            }
+
+            if (roomExists.status != StatusRoom.aberto) {
+                throw new RoomNotIsAvailablesError();
+            }
+        }
+
+    }
+
+    private async userValidation(userId, type: 'insert' | 'update') {
+        const maxReservesByUser = 2;
+        if (type == 'update' && userId) {
+            const userExists = await this.userRepository.findById(userId);
+
+            if (!userExists) {
+                throw new UserAlreadyExistsError();
+            }
+
+            const quantityReserves = await this.repository.findByUser(userId);
+
+            if (quantityReserves > maxReservesByUser) {
+                throw new ReservationLimitError();
+            }
+        }
+
+        if (type == 'insert') {
+            const userExists = await this.userRepository.findById(userId);
+
+            if (!userExists) {
+                throw new UserAlreadyExistsError();
+            }
+
+            const quantityReserves = await this.repository.findByUser(userId);
+
+            if (quantityReserves > maxReservesByUser) {
+                throw new ReservationLimitError();
+            }
+        }
+
+    }
 
     async findAll(): Promise<Reservation[] | null> {
         const reservationes = await this.repository.findAll();
@@ -69,6 +134,9 @@ export class ReservationUseCase {
         if (reservationAlreadyExists) {
             throw new ReservationAlreadyExistsError();
         }
+
+        await this.roomValidation(data.roomId, 'insert');
+        await this.userValidation(data.userId, 'insert');
 
         const reservation = await this.repository.create({
             userId: data.userId,
@@ -133,6 +201,8 @@ export class ReservationUseCase {
             }
         }
 
+        await this.roomValidation(data.roomId, 'update');
+        await this.userValidation(data.userId, 'update');
 
         const updatedReservation = await this.repository.update(id, dataReservation);
 

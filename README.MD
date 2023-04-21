@@ -18,3 +18,7 @@
 [ ] - Permitir cadastrar fotos do local
 [ ] - Permitir usuário se cadastrar pelo site.
 [ ] - Permitir o usuário fazer sua reserva online.
+
+// Parameter
+max days of reserve
+max reserver to user
