@@ -52,7 +52,7 @@ export class InMemoryReservationRepository implements ReservationRepository {
             roomId: data.roomId,
             entryDate: data.entryDate,
             exitDate: data.exitDate,
-            status: StatusReservation.notConfirmed,
+            status: data.status,
             created_at: new Date()
         };
 
@@ -71,7 +71,7 @@ export class InMemoryReservationRepository implements ReservationRepository {
         return reservation;
     }
 
-    async update(id: string, data: Prisma.ReservationUpdateInput | { userId?: string, roomId?: string, entryDate?: Date | string, exitDate?: Date | string, status?: string }) {
+    async update(id: string, data: Prisma.ReservationUpdateInput | { userId?: string, roomId?: string, entryDate?: Date | string, exitDate?: Date | string, status?: string, checkinId: string }) {
 
         const typeRoomOld = this.items.filter(user => user.id == id)[0];
         const indexReservation = this.items.indexOf(typeRoomOld);

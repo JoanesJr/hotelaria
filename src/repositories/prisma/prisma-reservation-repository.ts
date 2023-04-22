@@ -34,7 +34,7 @@ export class PrismaReservationRepository implements ReservationRepository {
                 CheckIn: {
                     where: {
                         id: {
-                            not: null
+                            not: undefined
                         }
                     }
                 },

@@ -6,6 +6,7 @@ import { roomController } from './controllers/room';
 import { itemController } from './controllers/items';
 import { reservationController } from './controllers/reservation';
 import { parameterController } from './controllers/parameters';
+import { checkinController } from './controllers/checkIn';
 
 
 export async function appRoutes(app: FastifyInstance) {
@@ -59,4 +60,11 @@ export async function appRoutes(app: FastifyInstance) {
     app.post('/parameters', parameterController.createParameters);
     app.get('/parameters', parameterController.findParameters);
     app.patch('/parameters/:id', parameterController.update);
+
+    // checkin
+    app.post('/checkin', checkinController.register);
+    app.get('/checkin', checkinController.findAll);
+    app.get('/checkin/:id', checkinController.findById);
+    app.get('/checkin/reservation/:id', checkinController.findByReservation);
+
 }
