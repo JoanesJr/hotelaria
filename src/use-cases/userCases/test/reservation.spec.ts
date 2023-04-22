@@ -15,11 +15,14 @@ import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-user
 import { ReservationInvalidError } from '@/use-cases/errors/reservartion-invalid-error';
 import { ReservationLimitError } from '@/use-cases/errors/reservartion-limit-error copy';
 import { ReservationAlreadyExistsError } from '@/use-cases/errors/reservartion-already-exists-error';
+import { ParametersRepository } from '@/repositories/parameters-repository';
+import { InMemoryParametersRepository } from '@/repositories/in-memory/in-memory-parameters-repository';
 
 let reservationRepository: ReservationRepository;
 let roomRepository: RoomRepository;
 let typeRoomRepositroy: TypeRoomRepository;
 let userRepository: UsersRepository;
+let parametersRepository: ParametersRepository;
 
 let sutReservation: ReservationUseCase;
 let sutRoom: RoomUseCase;
@@ -33,8 +36,9 @@ describe('MakeReservation Use Case', () => {
         roomRepository = new InMemoryRoomRepository();
         typeRoomRepositroy = new InMemoryTypeRoomRepository();
         userRepository = new InMemoryUsersRepository();
+        parametersRepository = new InMemoryParametersRepository();
 
-        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository);
+        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository, parametersRepository);
         sutRoom = new RoomUseCase(roomRepository);
         sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
         sutUser = new UserUseCase(userRepository);
@@ -177,8 +181,9 @@ describe('DeleteReservation Use Case', () => {
         roomRepository = new InMemoryRoomRepository();
         typeRoomRepositroy = new InMemoryTypeRoomRepository();
         userRepository = new InMemoryUsersRepository();
+        parametersRepository = new InMemoryParametersRepository();
 
-        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository);
+        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository, parametersRepository);
         sutRoom = new RoomUseCase(roomRepository);
         sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
         sutUser = new UserUseCase(userRepository);
@@ -230,8 +235,9 @@ describe('UpdateReservation Use Case', () => {
         roomRepository = new InMemoryRoomRepository();
         typeRoomRepositroy = new InMemoryTypeRoomRepository();
         userRepository = new InMemoryUsersRepository();
+        parametersRepository = new InMemoryParametersRepository();
 
-        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository);
+        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository, parametersRepository);
         sutRoom = new RoomUseCase(roomRepository);
         sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
         sutUser = new UserUseCase(userRepository);

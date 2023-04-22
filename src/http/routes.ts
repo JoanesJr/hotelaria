@@ -5,6 +5,7 @@ import { typeRoomController } from './controllers/typeRoom';
 import { roomController } from './controllers/room';
 import { itemController } from './controllers/items';
 import { reservationController } from './controllers/reservation';
+import { parameterController } from './controllers/parameters';
 
 
 export async function appRoutes(app: FastifyInstance) {
@@ -53,4 +54,9 @@ export async function appRoutes(app: FastifyInstance) {
     app.get('/reservation/exists/:id', reservationController.findReservation);
     app.patch('/reservation/:id', reservationController.update);
     app.delete('/reservation/:id', reservationController.delete);
+
+    // parameter
+    app.post('/parameters', parameterController.createParameters);
+    app.get('/parameters', parameterController.findParameters);
+    app.patch('/parameters/:id', parameterController.update);
 }

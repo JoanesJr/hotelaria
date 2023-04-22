@@ -97,3 +97,13 @@ model CheckOut {
   id_reservation Reservation @relation(fields: [reservationId], references: [id])
   reservationId  String      @unique
 }
+
+model Parameters {
+  id               String @id @default(uuid())
+  email            String
+  password         String
+  maxReserve       Int
+  maxDaysOfReserve Int
+
+  @@map("parameters")
+}

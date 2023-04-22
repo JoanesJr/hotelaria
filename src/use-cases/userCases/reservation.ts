@@ -12,6 +12,7 @@ import { RoomNotExistsError } from '../errors/room-not-exists-error';
 import { StatusRoom } from './room';
 import { RoomNotIsAvailablesError } from '../errors/room-not-is-available-error copy';
 import { UserAlreadyExistsError } from '../errors/user-already-exists-error';
+import { ParametersRepository } from '@/repositories/parameters-repository';
 
 export enum StatusReservation {
     notConfirmed = 'Nao Confirmada',
@@ -33,7 +34,10 @@ interface ReservationUseCaseResponse {
 
 
 export class ReservationUseCase {
-    constructor(private readonly repository: ReservationRepository, private readonly roomRepository: RoomRepository, private readonly userRepository: UsersRepository) { }
+    constructor(private readonly repository: ReservationRepository,
+        private readonly roomRepository: RoomRepository,
+        private readonly userRepository: UsersRepository,
+        private readonly parametersRepository: ParametersRepository) { }
 
     private async roomValidation(roomId, type: 'insert' | 'update') {
         if (type == 'update' && roomId) {
@@ -63,7 +67,7 @@ export class ReservationUseCase {
     }
 
     private async userValidation(userId, type: 'insert' | 'update') {
-        const maxReservesByUser = 2;
+        const maxReservesByUser = (await this.parametersRepository.findParameters())?.maxReserve || 2;
         if (type == 'update' && userId) {
             const userExists = await this.userRepository.findById(userId);
 
@@ -108,7 +112,7 @@ export class ReservationUseCase {
 
 
     async register(dt: ReservationUseCaseRequest): Promise<ReservationUseCaseResponse> {
-        const maxDaysReservated = 7;
+        const maxDaysReservated = (await this.parametersRepository.findParameters())?.maxDaysOfReserve || 7;
 
         const reservationValidationSchema = z.object({
             userId: z.string(),
@@ -156,7 +160,8 @@ export class ReservationUseCase {
         if (!existThisReservation || !id) {
             throw new DataNotFoundError();
         }
-        const maxDaysReservated = 7;
+
+        const maxDaysReservated = (await this.parametersRepository.findParameters())?.maxDaysOfReserve || 7;
 
         const validationSchema = z.object({
             userId: z.string().optional(),
