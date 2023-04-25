@@ -1,25 +1,30 @@
-import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository';
 import { describe, expect, it, beforeEach } from 'vitest';
 import { UserUseCase } from '../user';
-import { UsersRepository } from '@/repositories/users-repository';
-import { AddressRepository } from '@/repositories/address-repository';
 import { AddressAlreadyExistsError } from '../../errors/address-already-exists-error';
-import { InMemoryAddresssRepository } from '@/repositories/in-memory/in-memory-address-repository';
 import { AddressUseCase } from '../address';
 import { DataNotFoundError } from '@/use-cases/errors/data-not-found-error';
+import { PrismaTstUsersRepository } from '@/repositories/prisma-tst/prisma-tst-users-repository';
+import { PrismaTstAddresssRepository } from '@/repositories/prisma-tst/prisma-tst-address-repository';
+import { MaritalStatus } from '@/http/controllers/users';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
 
-let usersRepository: UsersRepository;
-let sut: UserUseCase;
-let addressRepository: AddressRepository;
-let sutAddress: AddressUseCase;
+const exec = promisify(execCallback);
+
+const usersRepository = new PrismaTstUsersRepository();
+const sut = new UserUseCase(usersRepository);
+const addressRepository = new PrismaTstAddresssRepository();
+const sutAddress = new AddressUseCase(addressRepository);
+
+
+async function cleanModel() {
+    await exec('npx prisma migrate reset --force');
+}
 
 describe('Register Address Use Case', () => {
 
-    beforeEach(() => {
-        addressRepository = new InMemoryAddresssRepository();
-        usersRepository = new InMemoryUsersRepository();
-        sutAddress = new AddressUseCase(addressRepository);
-        sut = new UserUseCase(usersRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be add address', async () => {
@@ -27,9 +32,10 @@ describe('Register Address Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const data = {
@@ -37,7 +43,6 @@ describe('Register Address Use Case', () => {
             neighborhood: 'Bairro A',
             cep: '45936000',
             userId: user.id,
-            created_at: new Date()
         };
 
         const { address } = await sutAddress.register(data);
@@ -50,9 +55,10 @@ describe('Register Address Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const data = {
@@ -72,11 +78,8 @@ describe('Register Address Use Case', () => {
 });
 
 describe('UpdateAddress Use Case', () => {
-    beforeEach(() => {
-        addressRepository = new InMemoryAddresssRepository();
-        usersRepository = new InMemoryUsersRepository();
-        sutAddress = new AddressUseCase(addressRepository);
-        sut = new UserUseCase(usersRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be update address', async () => {
@@ -84,9 +87,10 @@ describe('UpdateAddress Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const data = {
@@ -94,7 +98,6 @@ describe('UpdateAddress Use Case', () => {
             neighborhood: 'Bairro A',
             cep: '45936000',
             userId: user.id,
-            created_at: new Date()
         };
 
 
@@ -114,22 +117,21 @@ describe('UpdateAddress Use Case', () => {
     });
 });
 
-describe('DeleteUser Use Case', () => {
-    beforeEach(() => {
-        addressRepository = new InMemoryAddresssRepository();
-        usersRepository = new InMemoryUsersRepository();
-        sutAddress = new AddressUseCase(addressRepository);
-        sut = new UserUseCase(usersRepository);
+describe('DeleteAddress Use Case', () => {
+    beforeEach(async () => {
+        await cleanModel();
     });
+
 
     it('should be delete user', async () => {
         const { user } = await sut.register({
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const data = {
@@ -137,16 +139,14 @@ describe('DeleteUser Use Case', () => {
             neighborhood: 'Bairro A',
             cep: '45936000',
             userId: user.id,
-            created_at: new Date()
         };
 
         const { address } = await sutAddress.register(data);
 
         const addressDelete = await sutAddress.delete(address.id);
-        const newAddress = await sutAddress.findAll();
-        const existsAddress = newAddress.filter((address) => address.id === addressDelete.id);
+        const newAddress = await sutAddress.findById(addressDelete.id);
 
-        expect(existsAddress).toHaveLength(0);
+        expect(newAddress).toBeNull();
     });
 
     it('should not be delete not exists address id', async () => {

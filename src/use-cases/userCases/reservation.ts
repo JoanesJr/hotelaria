@@ -104,10 +104,10 @@ export class ReservationUseCase {
         return reservationes;
     }
 
-    async findById(id: string): Promise<Reservation | null> {
+    async findById(id: string): Promise<ReservationUseCaseResponse | null> {
         const reservation = await this.repository.findById(id);
 
-        return reservation;
+        return { reservation };
     }
 
 
@@ -117,8 +117,8 @@ export class ReservationUseCase {
         const reservationValidationSchema = z.object({
             userId: z.string(),
             roomId: z.string(),
-            entryDate: z.string().datetime(),
-            exitDate: z.string().datetime(),
+            entryDate: z.date(),
+            exitDate: z.date(),
             status: z.enum(Object.values(StatusReservation))
         });
 
@@ -166,8 +166,8 @@ export class ReservationUseCase {
         const validationSchema = z.object({
             userId: z.string().optional(),
             roomId: z.string().optional(),
-            entryDate: z.string().datetime().optional(),
-            exitDate: z.string().datetime().optional(),
+            entryDate: z.date().optional(),
+            exitDate: z.date().optional(),
             status: z.enum(Object.values(StatusReservation)).optional()
         });
 
@@ -229,7 +229,7 @@ export class ReservationUseCase {
 
         const reservation = await this.repository.delete(data.id);
 
-        return reservation;
+        return { reservation };
     }
 
     async findReservation(dt: { roomId: string, entryDate: Date }) {

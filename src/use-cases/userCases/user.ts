@@ -7,6 +7,7 @@ import { differenceInYears } from 'date-fns';
 import { MajorityError } from '../errors/majority-error';
 import { z } from 'zod';
 import { DataNotFoundError } from '../errors/data-not-found-error';
+import { MaritalStatus } from '@/http/controllers/users';
 
 
 
@@ -57,7 +58,7 @@ export class UserUseCase {
         return user;
     }
 
-    async register({ name, email, password, cpf, birthday, privilege = 'basic' }: RegisterUseCaseRequest): Promise<UseCaseResponse> {
+    async register({ name, email, password, cpf, birthday, privilege = 'basic', maritalStatus = MaritalStatus.solteiro }: RegisterUseCaseRequest): Promise<UseCaseResponse> {
         const password_hash = await hash(password, 6);
 
         const userWithSameEmail = await this.usersRepository.findByEmail(email);
@@ -83,7 +84,8 @@ export class UserUseCase {
             password_hash,
             cpf,
             birthday,
-            privilege
+            privilege,
+            maritalStatus
         });
 
 
@@ -116,7 +118,8 @@ export class UserUseCase {
             cpf: z.string().min(11).max(11).optional(),
             password: z.string().optional(),
             privilege: z.string().optional(),
-            birthday: z.string().datetime().optional()
+            birthday: z.string().datetime().optional(),
+            maritalStatus: z.enum(Object.values(MaritalStatus)).optional()
         });
 
         const dataUser = validationSchema.parse(data);

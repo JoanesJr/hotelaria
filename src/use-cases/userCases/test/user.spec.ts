@@ -1,30 +1,41 @@
-import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository';
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, afterAll } from 'vitest';
 import { UserUseCase } from '../user';
 import { UserAlreadyExistsError } from '../../errors/user-already-exists-error';
 import { CpfIsInvalidError } from '../../errors/cpf-is-invalid-error';
 import { MajorityError } from '../../errors/majority-error';
-import { UsersRepository } from '@/repositories/users-repository';
 import { DataNotFoundError } from '@/use-cases/errors/data-not-found-error';
+import { PrismaTstUsersRepository } from '@/repositories/prisma-tst/prisma-tst-users-repository';
+import { MaritalStatus } from '@/http/controllers/users';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
 
-let usersRepository: UsersRepository;
-let sut: UserUseCase;
+const exec = promisify(execCallback);
+
+const usersRepository = new PrismaTstUsersRepository();
+const sut = new UserUseCase(usersRepository);
+
+
+async function cleanModel() {
+    await exec('npx prisma migrate reset --force');
+}
 
 describe('RegisterUser Use Case', () => {
 
-    beforeEach(() => {
-        usersRepository = new InMemoryUsersRepository();
-        sut = new UserUseCase(usersRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
+
+
 
     it('should be register users', async () => {
         const { user } = await sut.register({
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.solteiro
         });
 
         expect(user.id).toEqual(expect.any(String));
@@ -35,7 +46,7 @@ describe('RegisterUser Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
             privilege: 'basic'
         };
@@ -53,7 +64,7 @@ describe('RegisterUser Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '1234567890',
             privilege: 'basic'
         };
@@ -77,26 +88,28 @@ describe('RegisterUser Use Case', () => {
 });
 
 describe('DeleteUser Use Case', () => {
-    beforeEach(() => {
-        usersRepository = new InMemoryUsersRepository();
-        sut = new UserUseCase(usersRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
+
+
 
     it('should be delete user', async () => {
         const { user } = await sut.register({
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.solteiro
         });
 
         const userDelete = await sut.delete(user.id);
-        const newUsers = await sut.findAll();
-        const existsUser = newUsers.filter((user) => user.id === userDelete.user.id);
+        const findUserDelete = await sut.findById(user.id);
 
-        expect(existsUser).toHaveLength(0);
+
+        expect(findUserDelete).toBeNull();
     });
 
     it('should not be delete not exists user id', async () => {
@@ -106,19 +119,20 @@ describe('DeleteUser Use Case', () => {
 });
 
 describe('UpdateUser Use Case', () => {
-    beforeEach(() => {
-        usersRepository = new InMemoryUsersRepository();
-        sut = new UserUseCase(usersRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
+
 
     it('should be update user', async () => {
         const { user } = await sut.register({
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const userUpdated = await sut.update(user.id, {
@@ -131,15 +145,6 @@ describe('UpdateUser Use Case', () => {
     });
 
     it('should not be update user when  id not exists', async () => {
-        const { user } = await sut.register({
-            name: 'Joanes de Jesus Nunes Junior',
-            email: 'example@email.com',
-            password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
-            cpf: '12345678901',
-            privilege: 'basic'
-        });
-
 
         await expect(sut.update('id-not-found', { name: 'Joanes' })).rejects.toBeInstanceOf(DataNotFoundError);
     });
@@ -149,18 +154,20 @@ describe('UpdateUser Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const { user } = await sut.register({
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example2@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678902',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
 

@@ -32,7 +32,7 @@ model Address {
   street       String
   neighborhood String
   cep          String
-  id_user      User     @relation(fields: [userId], references: [id])
+  id_user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String
   created_at   DateTime @default(now())
 
@@ -53,7 +53,7 @@ model Room {
   name        String
   info        String
   status      String        @default("aberto")
-  typeRoom_id TypeRoom      @relation(fields: [typeRoomId], references: [id])
+  typeRoom_id TypeRoom      @relation(fields: [typeRoomId], references: [id], onDelete: Cascade)
   typeRoomId  String
   created_at  DateTime      @default(now())
   Reservation Reservation[]
@@ -62,21 +62,23 @@ model Room {
 }
 
 model Item {
-  id         String   @id @default(uuid())
-  name       String   @unique
-  info       String
-  price      Float
-  url        String?
-  created_at DateTime @default(now())
+  id          String        @id @default(uuid())
+  name        String        @unique
+  info        String
+  price       Float
+  url         String?
+  created_at  DateTime      @default(now())
+  accountId   String?
+  AccountItem AccountItem[]
 
   @@map("item")
 }
 
 model Reservation {
   id         String    @id @default(uuid())
-  user_id    User      @relation(fields: [userId], references: [id])
+  user_id    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
-  room_id    Room      @relation(fields: [roomId], references: [id])
+  room_id    Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
   roomId     String
   entryDate  DateTime
   exitDate   DateTime
@@ -84,18 +86,25 @@ model Reservation {
   created_at DateTime  @default(now())
   CheckIn    CheckIn[]
   CheckOut   CheckOut?
+
+  @@map("reservation")
 }
 
 model CheckIn {
   id             String      @id @default(uuid())
-  id_reservation Reservation @relation(fields: [reservationId], references: [id])
+  id_reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   reservationId  String      @unique
+  Account        Account[]
+
+  @@map("checkin")
 }
 
 model CheckOut {
   id             String      @id @default(uuid())
-  id_reservation Reservation @relation(fields: [reservationId], references: [id])
+  id_reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
   reservationId  String      @unique
+
+  @@map("checkout")
 }
 
 model Parameters {
@@ -106,4 +115,28 @@ model Parameters {
   maxDaysOfReserve Int
 
   @@map("parameters")
+}
+
+model Account {
+  id         String        @id @default(uuid())
+  id_checkin CheckIn       @relation(fields: [checkInId], references: [id], onDelete: Cascade)
+  checkInId  String        @unique
+  items      AccountItem[]
+  roomValue  Float
+  status     String
+  total      Float?
+  creted_at  DateTime      @default(now())
+
+  @@map("account")
+}
+
+model AccountItem {
+  id        String   @id @default(uuid())
+  item_id   Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId    String
+  value     Float
+  Account   Account? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId String?
+
+  @@map("account_item")
 }

@@ -29,10 +29,10 @@ export class ItemUseCase {
         return items;
     }
 
-    async findById(id: string): Promise<Item | null> {
+    async findById(id: string): Promise<RegisterUseCaseResponse | null> {
         const item = await this.repository.findById(id);
 
-        return item;
+        return { item };
     }
 
     async register(request: RegisterUseCaseRequest): Promise<RegisterUseCaseResponse> {
@@ -72,7 +72,7 @@ export class ItemUseCase {
 
         const item = await this.repository.delete(data.id);
 
-        return item;
+        return { item };
     }
 
     async update(id: string, data: Prisma.ItemUpdateInput) {

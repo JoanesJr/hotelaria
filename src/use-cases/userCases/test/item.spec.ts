@@ -1,18 +1,27 @@
-import { InMemoryItemsRepository } from '@/repositories/in-memory/in-memory-items-repository';
+
 import { describe, expect, it, beforeEach } from 'vitest';
 import { ItemUseCase } from '../item';
 import { ItemAlreadyExistsError } from '../../errors/item-already-exists-error';
-import { ItemsRepository } from '@/repositories/items-repository';
 import { DataNotFoundError } from '@/use-cases/errors/data-not-found-error';
+import { PrismaTstItemsRepository } from '@/repositories/prisma-tst/prisma-tst-items-repository';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
 
-let itemsRepository: ItemsRepository;
-let sut: ItemUseCase;
+const exec = promisify(execCallback);
+
+const itemsRepository = new PrismaTstItemsRepository();
+const sut = new ItemUseCase(itemsRepository);
+
+
+async function cleanModel() {
+    await exec('npx prisma migrate reset --force');
+}
+
 
 describe('RegisterItem Use Case', () => {
 
-    beforeEach(() => {
-        itemsRepository = new InMemoryItemsRepository();
-        sut = new ItemUseCase(itemsRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be register items', async () => {
@@ -39,9 +48,8 @@ describe('RegisterItem Use Case', () => {
 });
 
 describe('DeleteItem Use Case', () => {
-    beforeEach(() => {
-        itemsRepository = new InMemoryItemsRepository();
-        sut = new ItemUseCase(itemsRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be delete item', async () => {
@@ -51,11 +59,10 @@ describe('DeleteItem Use Case', () => {
             price: 35.40
         });
 
-        const itemDelete = await sut.delete(item.id);
-        const newItems = await sut.findAll();
-        const existsItem = newItems.filter((item) => item.id === itemDelete.id);
+        const { item: itemDelete } = await sut.delete(item.id);
+        const { item: deletedItem } = await sut.findById(itemDelete.id);
 
-        expect(existsItem).toHaveLength(0);
+        expect(deletedItem).toBeNull();
     });
 
     it('should not be delete not exists item id', async () => {
@@ -65,9 +72,8 @@ describe('DeleteItem Use Case', () => {
 });
 
 describe('UpdateItem Use Case', () => {
-    beforeEach(() => {
-        itemsRepository = new InMemoryItemsRepository();
-        sut = new ItemUseCase(itemsRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be update item', async () => {
@@ -77,11 +83,11 @@ describe('UpdateItem Use Case', () => {
             price: 35.40
         });
 
-        const itemUpdated = await sut.update(item.id, {
+        const { item: itemUpdated } = await sut.update(item.id, {
             name: 'Item B'
         });
 
-        const getItemUpdated = await sut.findById(item.id);
+        const { item: getItemUpdated } = await sut.findById(itemUpdated.id);
 
         expect(getItemUpdated.name).toEqual('Item B');
     });

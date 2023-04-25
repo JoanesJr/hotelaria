@@ -1,8 +1,8 @@
-import { prisma } from '@/lib/prisma';
+import { prismaTst as prisma } from '@/lib/prisma-tst';
 import { Prisma, Item } from '@prisma/client';
 import { ItemsRepository } from '../items-repository';
 
-export class PrismaItemsRepository implements ItemsRepository {
+export class PrismaTstItemsRepository implements ItemsRepository {
 
     async findAll(): Promise<Item[] | null> {
         const item = await prisma.item.findMany();
@@ -57,5 +57,9 @@ export class PrismaItemsRepository implements ItemsRepository {
         });
 
         return item;
+    }
+
+    async deleteAll() {
+        await prisma.item.deleteMany();
     }
 }

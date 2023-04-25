@@ -17,31 +17,38 @@ import { ReservationLimitError } from '@/use-cases/errors/reservartion-limit-err
 import { ReservationAlreadyExistsError } from '@/use-cases/errors/reservartion-already-exists-error';
 import { ParametersRepository } from '@/repositories/parameters-repository';
 import { InMemoryParametersRepository } from '@/repositories/in-memory/in-memory-parameters-repository';
+import { PrismaTstReservationRepository } from '@/repositories/prisma-tst/prisma-tst-reservation-repository';
+import { PrismaTstRoomRepository } from '@/repositories/prisma-tst/prisma-tst-room-repository';
+import { PrismaTstTypeRoomRepository } from '@/repositories/prisma-tst/prisma-tst-typeRoom-repository';
+import { PrismaTstUsersRepository } from '@/repositories/prisma-tst/prisma-tst-users-repository';
+import { PrismaTstParametersRepository } from '@/repositories/prisma-tst/prisma-tst-parameters-repository';
+import { MaritalStatus } from '@/http/controllers/users';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
 
-let reservationRepository: ReservationRepository;
-let roomRepository: RoomRepository;
-let typeRoomRepositroy: TypeRoomRepository;
-let userRepository: UsersRepository;
-let parametersRepository: ParametersRepository;
+const exec = promisify(execCallback);
 
-let sutReservation: ReservationUseCase;
-let sutRoom: RoomUseCase;
-let sutTypeRoom: TypeRoomUseCase;
-let sutUser: UserUseCase;
+
+const reservationRepository = new PrismaTstReservationRepository();
+const roomRepository = new PrismaTstRoomRepository();
+const typeRoomRepositroy = new PrismaTstTypeRoomRepository();
+const userRepository = new PrismaTstUsersRepository();
+const parametersRepository = new PrismaTstParametersRepository();
+
+const sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository, parametersRepository);
+const sutRoom = new RoomUseCase(roomRepository);
+const sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
+const sutUser = new UserUseCase(userRepository);
+
+
+async function cleanModel() {
+    await exec('npx prisma migrate reset --force');
+}
+
 
 describe('MakeReservation Use Case', () => {
-
-    beforeEach(() => {
-        reservationRepository = new InMemoryReservationRepository();
-        roomRepository = new InMemoryRoomRepository();
-        typeRoomRepositroy = new InMemoryTypeRoomRepository();
-        userRepository = new InMemoryUsersRepository();
-        parametersRepository = new InMemoryParametersRepository();
-
-        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository, parametersRepository);
-        sutRoom = new RoomUseCase(roomRepository);
-        sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
-        sutUser = new UserUseCase(userRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be make reservation', async () => {
@@ -49,10 +56,10 @@ describe('MakeReservation Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
             privilege: 'basic',
-            maritalStatus: 'Solteiro'
+            maritalStatus: MaritalStatus.casado
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -68,8 +75,8 @@ describe('MakeReservation Use Case', () => {
             userId: user.id,
             roomId: room.id,
             status: StatusReservation.notConfirmed,
-            entryDate: '2023-04-20T12:40:00Z',
-            exitDate: '2023-04-21T12:40:00Z',
+            entryDate: new Date('2023-04-20'),
+            exitDate: new Date('2023-04-21'),
         });
 
         expect(reservation.id).toEqual(expect.any(String));
@@ -80,9 +87,10 @@ describe('MakeReservation Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -98,8 +106,8 @@ describe('MakeReservation Use Case', () => {
             userId: user.id,
             roomId: room.id,
             status: StatusReservation.notConfirmed,
-            entryDate: '2023-04-20T12:40:00Z',
-            exitDate: '2023-04-20T12:40:00Z',
+            entryDate: new Date('2023-04-20'),
+            exitDate: new Date('2023-04-20'),
         };
 
         await expect(sutReservation.register(data)).rejects.toBeInstanceOf(ReservationInvalidError);
@@ -110,9 +118,10 @@ describe('MakeReservation Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -128,8 +137,8 @@ describe('MakeReservation Use Case', () => {
             userId: user.id,
             roomId: room.id,
             status: StatusReservation.notConfirmed,
-            entryDate: '2023-04-20T12:40:00Z',
-            exitDate: '2023-04-28T12:40:00Z',
+            entryDate: new Date('2023-04-20'),
+            exitDate: new Date('2023-04-28'),
         };
 
         await expect(sutReservation.register(data)).rejects.toBeInstanceOf(ReservationLimitError);
@@ -140,9 +149,10 @@ describe('MakeReservation Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -159,13 +169,13 @@ describe('MakeReservation Use Case', () => {
             userId: user.id,
             roomId: room.id,
             status: StatusReservation.notConfirmed,
-            entryDate: '2023-04-20T12:40:00Z',
-            exitDate: '2023-04-25T12:40:00Z',
+            entryDate: new Date('2023-04-20'),
+            exitDate: new Date('2023-04-25'),
         };
 
         const { reservation } = await sutReservation.register(data);
 
-        data.entryDate = '2023-04-24T12:40:00Z';
+        data.entryDate = new Date('2023-04-24');
 
         await expect(sutReservation.register(data)).rejects.toBeInstanceOf(ReservationAlreadyExistsError);
     });
@@ -176,17 +186,8 @@ describe('MakeReservation Use Case', () => {
 });
 
 describe('DeleteReservation Use Case', () => {
-    beforeEach(() => {
-        reservationRepository = new InMemoryReservationRepository();
-        roomRepository = new InMemoryRoomRepository();
-        typeRoomRepositroy = new InMemoryTypeRoomRepository();
-        userRepository = new InMemoryUsersRepository();
-        parametersRepository = new InMemoryParametersRepository();
-
-        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository, parametersRepository);
-        sutRoom = new RoomUseCase(roomRepository);
-        sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
-        sutUser = new UserUseCase(userRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be delete item', async () => {
@@ -194,9 +195,10 @@ describe('DeleteReservation Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -212,15 +214,14 @@ describe('DeleteReservation Use Case', () => {
             userId: user.id,
             roomId: room.id,
             status: StatusReservation.notConfirmed,
-            entryDate: '2023-04-20T12:40:00Z',
-            exitDate: '2023-04-21T12:40:00Z',
+            entryDate: new Date('2023-04-20'),
+            exitDate: new Date('2023-04-21'),
         });
 
-        const reservationDelete = await sutReservation.delete(reservation.id);
-        const newReservation = await sutReservation.findAll();
-        const existsReservation = newReservation.filter((item) => item.id === reservationDelete.id);
+        const { reservation: reservationDelete } = await sutReservation.delete(reservation.id);
+        const { reservation: deletedReservation } = await sutReservation.findById(reservationDelete.id);
 
-        expect(existsReservation).toHaveLength(0);
+        expect(deletedReservation).toBeNull();
     });
 
     it('should not be delete not exists reservation id', async () => {
@@ -230,17 +231,8 @@ describe('DeleteReservation Use Case', () => {
 });
 
 describe('UpdateReservation Use Case', () => {
-    beforeEach(() => {
-        reservationRepository = new InMemoryReservationRepository();
-        roomRepository = new InMemoryRoomRepository();
-        typeRoomRepositroy = new InMemoryTypeRoomRepository();
-        userRepository = new InMemoryUsersRepository();
-        parametersRepository = new InMemoryParametersRepository();
-
-        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository, parametersRepository);
-        sutRoom = new RoomUseCase(roomRepository);
-        sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
-        sutUser = new UserUseCase(userRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be update reservation', async () => {
@@ -248,9 +240,10 @@ describe('UpdateReservation Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -266,15 +259,15 @@ describe('UpdateReservation Use Case', () => {
             userId: user.id,
             roomId: room.id,
             status: StatusReservation.notConfirmed,
-            entryDate: '2023-04-20T12:40:00Z',
-            exitDate: '2023-04-21T12:40:00Z',
+            entryDate: new Date('2023-04-20'),
+            exitDate: new Date('2023-04-21'),
         });
 
-        const reservationUpdated = await sutReservation.update(reservation.id, {
+        const { reservation: reservationUpdated } = await sutReservation.update(reservation.id, {
             status: StatusReservation.confirmed
         });
 
-        const getReservationUpdated = await sutReservation.findById(reservation.id);
+        const { reservation: getReservationUpdated } = await sutReservation.findById(reservationUpdated.id);
 
         expect(getReservationUpdated.status).toEqual(StatusReservation.confirmed);
     });
@@ -290,9 +283,10 @@ describe('UpdateReservation Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
-            privilege: 'basic'
+            privilege: 'basic',
+            maritalStatus: MaritalStatus.casado
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -308,13 +302,13 @@ describe('UpdateReservation Use Case', () => {
             userId: user.id,
             roomId: room.id,
             status: StatusReservation.notConfirmed,
-            entryDate: '2023-04-20T12:40:00Z',
-            exitDate: '2023-04-21T12:40:00Z',
+            entryDate: new Date('2023-04-20'),
+            exitDate: new Date('2023-04-21'),
         };
 
         const { reservation } = await sutReservation.register(data);
 
 
-        await expect(sutReservation.update(reservation.id, { exitDate: '2023-04-19T12:40:00Z' })).rejects.toBeInstanceOf(ReservationInvalidError);
+        await expect(sutReservation.update(reservation.id, { exitDate: new Date('2023-04-19') })).rejects.toBeInstanceOf(ReservationInvalidError);
     });
 });

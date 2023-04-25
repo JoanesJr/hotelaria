@@ -1,35 +1,38 @@
-import { InMemoryTypeRoomRepository } from '@/repositories/in-memory/in-memory-typeRoom-repository';
 import { describe, expect, it, beforeEach } from 'vitest';
-import { TypeRoomRepository } from '@/repositories/typeRoom-repository';
-import { RoomRepository } from '@/repositories/room-repository';
 import { RoomAlreadyExistsError } from '../../errors/room-already-exists-error';
-import { InMemoryRoomRepository } from '@/repositories/in-memory/in-memory-room-repository';
 import { RoomUseCase, StatusRoom } from '../room';
 import { DataNotFoundError } from '@/use-cases/errors/data-not-found-error';
 import { TypeRoomUseCase } from '../typeRoom';
-import { ZodError } from 'zod';
+import { PrismaTstRoomRepository } from '@/repositories/prisma-tst/prisma-tst-room-repository';
+import { PrismaTstTypeRoomRepository } from '@/repositories/prisma-tst/prisma-tst-typeRoom-repository';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
 
-let typeRoomRepository: TypeRoomRepository;
-let sutTypeRoom: TypeRoomUseCase;
-let roomRepository: RoomRepository;
-let sutRoom: RoomUseCase;
+const exec = promisify(execCallback);
+
+const typeRoomRepository = new PrismaTstTypeRoomRepository();
+const sutTypeRoom = new TypeRoomUseCase(typeRoomRepository);
+const roomRepository = new PrismaTstRoomRepository();
+const sutRoom = new RoomUseCase(roomRepository);
+
+
+async function cleanModel() {
+    await exec('npx prisma migrate reset --force')
+}
 
 describe('Register Room Use Case', () => {
 
-    beforeEach(() => {
-        roomRepository = new InMemoryRoomRepository();
-        typeRoomRepository = new InMemoryTypeRoomRepository();
-        sutRoom = new RoomUseCase(roomRepository);
-        sutTypeRoom = new TypeRoomUseCase(typeRoomRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be add room', async () => {
         const { typeRoom } = await sutTypeRoom.register({
-            name: 'Tipo |'
+            name: 'CategoryRoasdadsom'
         });
 
         const data = {
-            name: 'Quarto um',
+            name: 'Quarto asdsdsx',
             info: 'Qualquer info',
             status: StatusRoom.aberto,
             typeRoomId: typeRoom.id,
@@ -41,13 +44,13 @@ describe('Register Room Use Case', () => {
     });
 
 
-    it('should not be add more than 1 room to same tpyeRoom', async () => {
+    it('should not be add more than 1 room to same typeRoom', async () => {
         const { typeRoom } = await sutTypeRoom.register({
-            name: 'Tipo |'
+            name: 'dsdxvds'
         });
 
         const data = {
-            name: 'Quarto um',
+            name: 'Quarto doasdasdis',
             info: 'Qualquer info',
             status: StatusRoom.aberto,
             typeRoomId: typeRoom.id,
@@ -62,20 +65,17 @@ describe('Register Room Use Case', () => {
 });
 
 describe('UpdateRoom Use Case', () => {
-    beforeEach(() => {
-        roomRepository = new InMemoryRoomRepository();
-        typeRoomRepository = new InMemoryTypeRoomRepository();
-        sutRoom = new RoomUseCase(roomRepository);
-        sutTypeRoom = new TypeRoomUseCase(typeRoomRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be update room', async () => {
         const { typeRoom } = await sutTypeRoom.register({
-            name: 'Tipo |'
+            name: 'CategoryRoom Three'
         });
 
         const data = {
-            name: 'Quarto um',
+            name: 'Quarto tres',
             info: 'Qualquer info',
             status: StatusRoom.aberto,
             typeRoomId: typeRoom.id,
@@ -85,34 +85,34 @@ describe('UpdateRoom Use Case', () => {
 
         const { room } = await sutRoom.register(data);
 
-        await sutRoom.update(room.id, { name: 'Quarto Editado' });
+        const { room: editedRoom } = await sutRoom.update(room.id, { name: 'Quarto Editado' });
 
-        const getRoomUpdated = await sutRoom.findById(room.id);
+        const { room: getRoomUpdated } = await sutRoom.findById(editedRoom.id);
+        console.log('aqui');
+        console.log(getRoomUpdated);
+        console.log(getRoomUpdated.name);
 
         expect(getRoomUpdated.name).toEqual('Quarto Editado');
     });
 
     it('should not be update room when  id not exists', async () => {
 
-        await expect(sutRoom.update('id-not-found', { name: 'Quarto um' })).rejects.toBeInstanceOf(DataNotFoundError);
+        await expect(sutRoom.update('id-not-found', { name: 'Quarto dvcxx' })).rejects.toBeInstanceOf(DataNotFoundError);
     });
 });
 
 describe('DeleteTypeRoom Use Case', () => {
-    beforeEach(() => {
-        roomRepository = new InMemoryRoomRepository();
-        typeRoomRepository = new InMemoryTypeRoomRepository();
-        sutRoom = new RoomUseCase(roomRepository);
-        sutTypeRoom = new TypeRoomUseCase(typeRoomRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
-    it('should be delete user', async () => {
+    it('should be delete typeRoom', async () => {
         const { typeRoom } = await sutTypeRoom.register({
-            name: 'Tipo |'
+            name: 'CategoryDelete'
         });
 
         const data = {
-            name: 'Quarto um',
+            name: 'Quarto quatcvcccro',
             info: 'Qualquer info',
             status: StatusRoom.aberto,
             typeRoomId: typeRoom.id,
@@ -120,11 +120,10 @@ describe('DeleteTypeRoom Use Case', () => {
 
         const { room } = await sutRoom.register(data);
 
-        const roomDelete = await sutRoom.delete(room.id);
-        const newRoom = await sutRoom.findAll();
-        const existsRoom = newRoom.filter((room) => room.id === roomDelete.id);
+        const { room: roomDelete } = await sutRoom.delete(room.id);
+        const { room: existRoom } = await sutRoom.findById(roomDelete.id);
 
-        expect(existsRoom).toHaveLength(0);
+        expect(existRoom).toBeNull();
     });
 
     it('should not be delete not exists room id', async () => {

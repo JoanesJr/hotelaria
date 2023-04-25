@@ -27,10 +27,10 @@ export class TypeRoomUseCase {
         return typeRooms;
     }
 
-    async findById(id: string): Promise<TypeRoom | null> {
+    async findById(id: string): Promise<RegisterUseCaseResponse | null> {
         const typeRoom = await this.repository.findById(id);
 
-        return typeRoom;
+        return { typeRoom };
     }
 
     async register({ name }: RegisterUseCaseRequest): Promise<RegisterUseCaseResponse> {
@@ -68,7 +68,7 @@ export class TypeRoomUseCase {
 
         const typeRoom = await this.repository.delete(data.id);
 
-        return typeRoom;
+        return { typeRoom };
     }
 
     async update(id: string, data: Prisma.TypeRoomUpdateInput) {
@@ -86,6 +86,8 @@ export class TypeRoomUseCase {
 
         if (dataTypeRoom.name) {
             const nameAlreadyExists = await this.repository.findByName(dataTypeRoom.name);
+
+            console.log(nameAlreadyExists);
 
             if (nameAlreadyExists && nameAlreadyExists.id != id) {
                 throw new TypeRoomAlreadyExistsError();

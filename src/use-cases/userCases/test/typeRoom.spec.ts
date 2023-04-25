@@ -1,18 +1,27 @@
-import { TypeRoomRepository } from '@/repositories/typeRoom-repository';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { TypeRoomUseCase } from '../typeRoom';
-import { InMemoryTypeRoomRepository } from '@/repositories/in-memory/in-memory-typeRoom-repository';
 import { TypeRoomAlreadyExistsError } from '@/use-cases/errors/typeRoom-already-exists-error';
 import { DataNotFoundError } from '@/use-cases/errors/data-not-found-error';
+import { PrismaTstTypeRoomRepository } from '@/repositories/prisma-tst/prisma-tst-typeRoom-repository';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
 
-let typeRoomRepository: TypeRoomRepository;
-let sut: TypeRoomUseCase;
+const exec = promisify(execCallback);
+
+const typeRoomRepository = new PrismaTstTypeRoomRepository();
+const sut = new TypeRoomUseCase(typeRoomRepository);
+
+
+async function cleanModel() {
+    await exec('npx prisma migrate reset --force')
+}
 
 describe('Register TypeRoom Use Case', () => {
-    beforeEach(() => {
-        typeRoomRepository = new InMemoryTypeRoomRepository();
-        sut = new TypeRoomUseCase(typeRoomRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
+
+
 
     it('should be register type room', async () => {
         const data = {
@@ -38,21 +47,20 @@ describe('Register TypeRoom Use Case', () => {
 });
 
 describe('DeleteTypeRoom Use Case', () => {
-    beforeEach(() => {
-        typeRoomRepository = new InMemoryTypeRoomRepository();
-        sut = new TypeRoomUseCase(typeRoomRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
+
 
     it('should be delete typeRoom', async () => {
         const { typeRoom } = await sut.register({
             name: 'Category One'
         });
 
-        const typeRoomDelete = await sut.delete(typeRoom.id);
-        const newTypeRooms = await sut.findAll();
-        const existsTypeRoom = newTypeRooms.filter((type) => type.id === typeRoomDelete.id);
+        const { typeRoom: typeRoomDeleted } = await sut.delete(typeRoom.id);
+        const { typeRoom: existTypeRoom } = await sut.findById(typeRoomDeleted.id);
 
-        expect(existsTypeRoom).toHaveLength(0);
+        expect(existTypeRoom).toBeNull();
     });
 
     it('should not be delete not exists typeRoom id', async () => {
@@ -62,21 +70,21 @@ describe('DeleteTypeRoom Use Case', () => {
 });
 
 describe('UpdateTypeRoom Use Case', () => {
-    beforeEach(() => {
-        typeRoomRepository = new InMemoryTypeRoomRepository();
-        sut = new TypeRoomUseCase(typeRoomRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
-    it('should be update user', async () => {
+
+    it('should be update typeRoom', async () => {
         const { typeRoom } = await sut.register({
-            name: 'Category One'
+            name: 'Category Up One'
         });
 
-        const typeRoomUpdated = await sut.update(typeRoom.id, {
+        const { typeRoom: typeRoomUpdate } = await sut.update(typeRoom.id, {
             name: 'Joanes'
         });
 
-        const getTypeRoomUpdated = await sut.findById(typeRoom.id);
+        const { typeRoom: getTypeRoomUpdated } = await sut.findById(typeRoomUpdate.id);
 
         expect(getTypeRoomUpdated.name).toEqual('Joanes');
     });
@@ -88,14 +96,14 @@ describe('UpdateTypeRoom Use Case', () => {
 
     it('should not be update typeRoom with same name', async () => {
         await sut.register({
-            name: 'Category One'
+            name: 'Category edit'
         });
 
         const { typeRoom } = await sut.register({
-            name: 'Category Two'
+            name: 'Category edit Two'
         });
 
 
-        await expect(sut.update(typeRoom.id, { name: 'Category One' })).rejects.toBeInstanceOf(TypeRoomAlreadyExistsError);
+        await expect(sut.update(typeRoom.id, { name: 'Category edit' })).rejects.toBeInstanceOf(TypeRoomAlreadyExistsError);
     });
 });

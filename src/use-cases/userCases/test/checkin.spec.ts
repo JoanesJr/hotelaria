@@ -1,57 +1,45 @@
-import { InMemoryItemsRepository } from '@/repositories/in-memory/in-memory-items-repository';
 import { describe, expect, it, beforeEach } from 'vitest';
-import { ItemUseCase } from '../item';
-import { ItemAlreadyExistsError } from '../../errors/item-already-exists-error';
-import { ItemsRepository } from '@/repositories/items-repository';
-import { DataNotFoundError } from '@/use-cases/errors/data-not-found-error';
-import { CheckInRepository } from '@/repositories/checkin-repository';
-import { ReservationRepository } from '@/repositories/reservation-repository';
 import { CheckInUseCase } from '../checkin';
-import { InMemoryCheckInsRepository } from '@/repositories/in-memory/in-memory-checkin-repository';
-import { InMemoryReservationRepository } from '@/repositories/in-memory/in-memory-reservation-repository';
-import { ParametersRepository } from '@/repositories/parameters-repository';
-import { UsersRepository } from '@/repositories/users-repository';
-import { TypeRoomRepository } from '@/repositories/typeRoom-repository';
-import { RoomRepository } from '@/repositories/room-repository';
 import { ReservationUseCase, StatusReservation } from '../reservation';
 import { RoomUseCase, StatusRoom } from '../room';
 import { TypeRoomUseCase } from '../typeRoom';
 import { UserUseCase } from '../user';
-import { InMemoryParametersRepository } from '@/repositories/in-memory/in-memory-parameters-repository';
-import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository';
-import { InMemoryTypeRoomRepository } from '@/repositories/in-memory/in-memory-typeRoom-repository';
-import { InMemoryRoomRepository } from '@/repositories/in-memory/in-memory-room-repository';
 import { CheckInReservationNotConfirmedError } from '@/use-cases/errors/checkin-reservation-not-confirmed-error';
 import { CheckInAlreadyExistsError } from '@/use-cases/errors/checkin-already-exists-error';
+import { PrismaTstReservationRepository } from '@/repositories/prisma-tst/prisma-tst-reservation-repository';
+import { PrismaTstRoomRepository } from '@/repositories/prisma-tst/prisma-tst-room-repository';
+import { PrismaTstTypeRoomRepository } from '@/repositories/prisma-tst/prisma-tst-typeRoom-repository';
+import { PrismaTstUsersRepository } from '@/repositories/prisma-tst/prisma-tst-users-repository';
+import { PrismaTstParametersRepository } from '@/repositories/prisma-tst/prisma-tst-parameters-repository';
+import { PrismaTstCheckInsRepository } from '@/repositories/prisma-tst/prisma-tst-checkIn-repository';
+import { exec as execCallback } from 'node:child_process';
+import { promisify } from 'node:util';
+import { MaritalStatus } from '@/http/controllers/users';
 
-let reservationRepository: ReservationRepository;
-let roomRepository: RoomRepository;
-let typeRoomRepositroy: TypeRoomRepository;
-let userRepository: UsersRepository;
-let parametersRepository: ParametersRepository;
-let checkInRepository: CheckInRepository;
+const exec = promisify(execCallback);
 
-let sutReservation: ReservationUseCase;
-let sutRoom: RoomUseCase;
-let sutTypeRoom: TypeRoomUseCase;
-let sutUser: UserUseCase;
-let sutCheckIn: CheckInUseCase;
+const reservationRepository = new PrismaTstReservationRepository();
+const roomRepository = new PrismaTstRoomRepository();
+const typeRoomRepositroy = new PrismaTstTypeRoomRepository();
+const userRepository = new PrismaTstUsersRepository();
+const parametersRepository = new PrismaTstParametersRepository();
+const checkInRepository = new PrismaTstCheckInsRepository();
+
+const sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository, parametersRepository);
+const sutRoom = new RoomUseCase(roomRepository);
+const sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
+const sutUser = new UserUseCase(userRepository);
+const sutCheckIn = new CheckInUseCase(checkInRepository, reservationRepository);
+
+
+async function cleanModel() {
+    await exec('npx prisma migrate reset --force');
+}
 
 describe('MakeCheckin Use Case', () => {
 
-    beforeEach(() => {
-        reservationRepository = new InMemoryReservationRepository();
-        roomRepository = new InMemoryRoomRepository();
-        typeRoomRepositroy = new InMemoryTypeRoomRepository();
-        userRepository = new InMemoryUsersRepository();
-        parametersRepository = new InMemoryParametersRepository();
-        checkInRepository = new InMemoryCheckInsRepository();
-
-        sutReservation = new ReservationUseCase(reservationRepository, roomRepository, userRepository, parametersRepository);
-        sutRoom = new RoomUseCase(roomRepository);
-        sutTypeRoom = new TypeRoomUseCase(typeRoomRepositroy);
-        sutUser = new UserUseCase(userRepository);
-        sutCheckIn = new CheckInUseCase(checkInRepository, reservationRepository);
+    beforeEach(async () => {
+        await cleanModel();
     });
 
     it('should be make checkIn', async () => {
@@ -59,10 +47,10 @@ describe('MakeCheckin Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
             privilege: 'basic',
-            maritalStatus: 'Solteiro'
+            maritalStatus: MaritalStatus.casado
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -78,8 +66,8 @@ describe('MakeCheckin Use Case', () => {
             userId: user.id,
             roomId: room.id,
             status: StatusReservation.confirmed,
-            entryDate: '2023-04-20T12:40:00Z',
-            exitDate: '2023-04-21T12:40:00Z',
+            entryDate: new Date('2023-04-20'),
+            exitDate: new Date('2023-04-21'),
         });
 
         const { checkIn } = await sutCheckIn.register({
@@ -94,10 +82,10 @@ describe('MakeCheckin Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
             privilege: 'basic',
-            maritalStatus: 'Solteiro'
+            maritalStatus: MaritalStatus.casado
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -113,8 +101,8 @@ describe('MakeCheckin Use Case', () => {
             userId: user.id,
             roomId: room.id,
             status: StatusReservation.notConfirmed,
-            entryDate: '2023-04-20T12:40:00Z',
-            exitDate: '2023-04-21T12:40:00Z',
+            entryDate: new Date('2023-04-20'),
+            exitDate: new Date('2023-04-21'),
         });
 
         await expect(sutCheckIn.register({ reservationId: reservation.id })).rejects.toBeInstanceOf(CheckInReservationNotConfirmedError);
@@ -125,10 +113,10 @@ describe('MakeCheckin Use Case', () => {
             name: 'Joanes de Jesus Nunes Junior',
             email: 'example@email.com',
             password: 'teste1234',
-            birthday: '2002-04-30T00:00:00',
+            birthday: new Date('2002-04-30'),
             cpf: '12345678901',
             privilege: 'basic',
-            maritalStatus: 'Solteiro'
+            maritalStatus: MaritalStatus.casado
         });
 
         const { typeRoom } = await sutTypeRoom.register({ name: 'Category One' });
@@ -144,8 +132,8 @@ describe('MakeCheckin Use Case', () => {
             userId: user.id,
             roomId: room.id,
             status: StatusReservation.confirmed,
-            entryDate: '2023-04-20T12:40:00Z',
-            exitDate: '2023-04-21T12:40:00Z',
+            entryDate: new Date('2023-04-20'),
+            exitDate: new Date('2023-04-21'),
         });
 
         const { checkIn } = await sutCheckIn.register({ reservationId: reservation.id });

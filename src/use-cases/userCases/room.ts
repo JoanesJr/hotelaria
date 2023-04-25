@@ -30,10 +30,10 @@ export class RoomUseCase {
         return rooms;
     }
 
-    async findById(id: string): Promise<Room | null> {
+    async findById(id: string): Promise<RoomUseCaseResponse | null> {
         const room = await this.repository.findById(id);
 
-        return room;
+        return { room };
     }
 
 
@@ -57,8 +57,7 @@ export class RoomUseCase {
             name: data.name,
             info: data.info,
             status: data.status,
-            typeRoomId: data.typeRoomId,
-            created_at: new Date()
+            typeRoomId: data.typeRoomId
         });
 
         return { room };
@@ -100,7 +99,7 @@ export class RoomUseCase {
 
         const room = await this.repository.delete(data.id);
 
-        return room;
+        return { room };
     }
 
 
