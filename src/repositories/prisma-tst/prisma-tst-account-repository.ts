@@ -1,6 +1,8 @@
 import { prismaTst as prisma } from '@/lib/prisma-tst';
 import { Prisma, Account } from '@prisma/client';
 import { AccountRepository } from '../account-repository';
+import { connect } from 'http2';
+import { StatusAccount } from '@/use-cases/userCases/account';
 
 export class PrismaTstAccountRepository implements AccountRepository {
 
@@ -14,6 +16,9 @@ export class PrismaTstAccountRepository implements AccountRepository {
         const account = await prisma.account.findUnique({
             where: {
                 id
+            },
+            include: {
+                items: true
             }
         });
 
@@ -30,16 +35,27 @@ export class PrismaTstAccountRepository implements AccountRepository {
         return account;
     }
 
-    async create(data: Prisma.AccountCreateInput): Promise<Account> {
+    async create(data: Prisma.AccountCreateInput, dataItems): Promise<Account> {
         const account = await prisma.account.create({
-            data
+            data: {
+                ...data,
+                items: {
+                    create: dataItems
+                }
+            },
+            include: {
+                items: true
+            }
         });
 
         return account;
     }
 
-    async delete(id: string): Promise<Account> {
-        const account = await prisma.account.delete({
+    async cancel(id: string): Promise<Account> {
+        const account = await prisma.account.update({
+            data: {
+                status: StatusAccount.cancelado
+            },
             where: {
                 id
             }

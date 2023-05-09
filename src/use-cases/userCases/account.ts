@@ -1,5 +1,5 @@
 import { AccountRepository } from '@/repositories/account-repository';
-import { Account, Item } from '@prisma/client';
+import { Account, AccountItem } from '@prisma/client';
 import { z } from 'zod';
 import { DataNotFoundError } from '../errors/data-not-found-error';
 import { Prisma } from '@prisma/client';
@@ -11,8 +11,8 @@ interface RegisterUseCaseRequest {
     checkInId: string,
     roomValue: number,
     status: StatusAccount,
-    items: Item[]
-    total: number
+    items: AccountItem[]
+    total?: number
 }
 
 interface RegisterUseCaseResponse {
@@ -35,10 +35,16 @@ export class AccountUseCase {
         return accounts;
     }
 
-    async findById(id: string): Promise<Account | null> {
+    async findById(id: string): Promise<RegisterUseCaseResponse | null> {
         const account = await this.repository.findById(id);
 
-        return account;
+        return { account };
+    }
+
+    async findByCheckIn(checkInId: string): Promise<RegisterUseCaseResponse | null> {
+        const account = await this.repository.findByCheckIn(checkInId);
+
+        return { account };
     }
 
     async register(request: RegisterUseCaseRequest): Promise<RegisterUseCaseResponse> {
@@ -47,30 +53,37 @@ export class AccountUseCase {
             roomValue: z.number(),
             status: z.enum(Object.values(StatusAccount)),
             total: z.number().optional(),
-            items: z.any()
+        });
+
+        const itemsSchema = z.object({
+            items: z.array(z.object({
+                itemId: z.string(),
+                value: z.number()
+            }))
         });
 
         const data = registerValidationSchema.parse(request);
+        const itemsValidation = itemsSchema.parse(request);
 
-        const checkInWithSameAccount = await this.repository.findByCheckIn(data.checkInId);
+        const accountWithSameCheckin = await this.repository.findByCheckIn(data.checkInId);
         const checkInExists = await this.checkInRepository.findById(data.checkInId);
 
-        if (checkInWithSameAccount) {
+        if (accountWithSameCheckin && accountWithSameCheckin.status != StatusAccount.cancelado) {
             throw new AccountAlreadyExistsError();
         }
 
-        if (checkInExists) {
+        if (!checkInExists) {
             throw new AccountCheckInNotExistsError();
         }
 
 
-        const account = await this.repository.create(data);
+        const account = await this.repository.create(data, itemsValidation.items);
 
         return { account };
 
     }
 
-    async delete(id: string) {
+    async cancel(id: string) {
         const bodySchemaValidation = z.object({
             id: z.string()
         });
@@ -83,9 +96,9 @@ export class AccountUseCase {
             throw new DataNotFoundError();
         }
 
-        const account = await this.repository.delete(data.id);
+        const account = await this.repository.cancel(data.id);
 
-        return account;
+        return { account };
     }
 
     async update(id: string, data: Prisma.AccountUpdateInput) {

@@ -7,13 +7,17 @@ export class PrismaReservationRepository implements ReservationRepository {
     async findReservation(roomId: string, entryDate: string | Date): Promise<Reservation> {
         const reservartion = await prisma.reservation.findFirst({
             where: {
-                entryDate: {
-                    gte: entryDate
-                },
-                exitDate: {
-                    lte: entryDate
-                },
-                roomId: roomId
+                roomId: roomId,
+                AND: [
+                    {
+                        entryDate: {
+                            lte: entryDate
+                        },
+                        exitDate: {
+                            gte: entryDate
+                        },
+                    }
+                ]
             }
         });
 
