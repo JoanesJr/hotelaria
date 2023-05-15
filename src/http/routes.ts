@@ -7,6 +7,8 @@ import { itemController } from './controllers/items';
 import { reservationController } from './controllers/reservation';
 import { parameterController } from './controllers/parameters';
 import { checkinController } from './controllers/checkIn';
+import { accountController } from './controllers/account';
+import { accountItemController } from './controllers/accountItem';
 
 
 export async function appRoutes(app: FastifyInstance) {
@@ -66,5 +68,21 @@ export async function appRoutes(app: FastifyInstance) {
     app.get('/checkin', checkinController.findAll);
     app.get('/checkin/:id', checkinController.findById);
     app.get('/checkin/reservation/:id', checkinController.findByReservation);
+
+    // Account
+    app.post('/account', accountController.register);
+    app.get('/account', accountController.findAll);
+    app.get('/account/:id', accountController.findById);
+    app.get('/account/chekcin/:id', accountController.findByCheckin);
+    app.patch('/account/:id', accountController.update);
+    app.post('/account/:id/cancel', accountController.cancel);
+
+    // AccountItem
+    app.post('/accountItem', accountItemController.register);
+    app.get('/accountItem', accountItemController.findAll);
+    app.get('/accountItem/:id', accountItemController.findById);
+    app.get('/accountItem/account/:id', accountItemController.findByAccount);
+    app.patch('/accountItem/:id', accountItemController.update);
+    app.delete('/accountItem/:id', accountItemController.delete);
 
 }

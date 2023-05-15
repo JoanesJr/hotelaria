@@ -101,16 +101,15 @@ export class AccountUseCase {
         return { account };
     }
 
-    async update(id: string, data: Prisma.AccountUpdateInput) {
+    async update(id: string, request: Prisma.AccountUpdateInput) {
         const validationSchema = z.object({
-            checkInId: z.string().optional(),
             roomValue: z.number().optional(),
             status: z.enum(Object.values(StatusAccount)).optional(),
             total: z.number().optional(),
-            items: z.any().optional()
         });
 
-        const dataAccount = validationSchema.parse(data);
+
+        const data = validationSchema.parse(request);
 
         const accountExists = await this.repository.findById(id);
 
@@ -118,14 +117,8 @@ export class AccountUseCase {
             throw new DataNotFoundError();
         }
 
-        if (dataAccount.checkInId) {
 
-            if (dataAccount && accountExists.id != id) {
-                throw new AccountAlreadyExistsError();
-            }
-        }
-
-        const updatedAccount = await this.repository.update(id, dataAccount);
+        const updatedAccount = await this.repository.update(id, data);
 
         return { account: updatedAccount };
     }
