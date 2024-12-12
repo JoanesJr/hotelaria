@@ -1,1 +1,1 @@
-export * from './parameters';
+export * from './privileges';

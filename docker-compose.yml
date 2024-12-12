@@ -11,7 +11,7 @@ services:
     environment:
       - POSTGRESQL_USERNAME=docker
       - POSTGRESQL_PASSWORD=docker
-      - POSTGRESQL_DATABASE=joanestechnology
+      - POSTGRESQL_DATABASE=epiflix
   joanestech-hotelaria-tst:
     image: bitnami/postgresql
     ports:
@@ -19,4 +19,4 @@ services:
     environment:
       - POSTGRESQL_USERNAME=docker
       - POSTGRESQL_PASSWORD=docker
-      - POSTGRESQL_DATABASE=joanestechnology-tst
+      - POSTGRESQL_DATABASE=epiflix-tst

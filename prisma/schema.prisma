@@ -11,132 +11,209 @@ datasource db {
 }
 
 model User {
-  id            String        @id @default(uuid())
-  name          String
-  email         String        @unique
-  cpf           String        @unique
-  birthday      DateTime
-  password_hash String
-  privilege     String        @default("basic")
-  maritalStatus String        @default("solteiro")
-  cardCar       String        @default("")
-  created_at    DateTime      @default(now())
-  Address       Address[]
-  Reservation   Reservation[]
+  id             String           @id @default(uuid())
+  name           String
+  surname        String
+  email          String           @unique
+  cpf            String           @unique
+  rg             String           @unique
+  birthday       DateTime
+  password_hash  String
+  active         Boolean          @default(true)
+  address        Address          @relation(fields: [address_id], references: [id])
+  address_id     String
+  privilege      Privilege        @relation(fields: [privilege_id], references: [id])
+  privilege_id   String
+  Comments       Comments[]
+  AnswerComments AnswerComments[]
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @default(now())
+
+  UserCourses UserCourses[]
+  Purchases   Purchases[]
 
   @@map("users")
 }
 
 model Address {
-  id           String   @id @default(uuid())
-  street       String
-  neighborhood String
-  cep          String
-  id_user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
-  created_at   DateTime @default(now())
+  id         String   @id @default(uuid())
+  streeth    String
+  number     Int
+  neighboor  String
+  complement String
+  reference  String
+  User       User[]
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 
   @@map("address")
 }
 
-model TypeRoom {
+model Privilege {
+  id         String   @id @default(uuid())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+  User       User[]
+
+  @@map("privilege")
+}
+
+model Courses {
+  id             String           @id @default(uuid())
+  name           String           @unique
+  price          Float
+  trailer        String?
+  capa           String?
+  active         Boolean          @default(false)
+  category       CourseCategories @relation(fields: [category_id], references: [id])
+  category_id    String
+  modules        ModulesCourses[]
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @default(now())
+  UserCourses    UserCourses[]
+  CuponsByCourse CuponsByCourse[]
+  Purchases      Purchases[]
+
+  @@map("courses")
+}
+
+model CourseCategories {
+  id         String    @id @default(uuid())
+  name       String    @unique
+  active     Boolean   @default(true)
+  Course     Courses[]
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now())
+
+  @@map("courses_categories")
+}
+
+model ModulesCourses {
+  id         String         @id @default(uuid())
+  name       String         @unique
+  active     Boolean
+  image      String?
+  Course     Courses[]
+  Classes    ClassCourses[]
+  created_at DateTime       @default(now())
+  updated_at DateTime       @default(now())
+
+  @@map("modules_courses")
+}
+
+model ClassCourses {
+  id             String           @id @default(uuid())
+  name           String
+  url            String?
+  active         Boolean
+  attachment     Attachments[]
+  ModulesCourses ModulesCourses[]
+  Comments       Comments[]
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @default(now())
+
+  @@map("class_courses")
+}
+
+model Attachments {
+  id           String         @id @default(uuid())
+  name         String
+  url          String?
+  ClassCourses ClassCourses[]
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @default(now())
+
+  @@map("attchments")
+}
+
+model Comments {
+  id         String           @id @default(uuid())
+  message    String
+  aula       ClassCourses     @relation(fields: [aulaid], references: [id])
+  aulaid     String
+  user       User             @relation(fields: [userid], references: [id])
+  userid     String
+  answer     AnswerComments[]
+  created_at DateTime         @default(now())
+  updated_at DateTime         @default(now())
+
+  @@map("comments")
+}
+
+model AnswerComments {
+  id         String     @id @default(uuid())
+  message    String
+  user       User       @relation(fields: [userid], references: [id])
+  userid     String
+  Comments   Comments[]
+  created_at DateTime   @default(now())
+  updated_at DateTime   @default(now())
+
+  @@map("answer_comments")
+}
+
+model UserCourses {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userid], references: [id])
+  userid      String
+  initialDate DateTime
+  expireDate  DateTime
+  course      Courses  @relation(fields: [courseid], references: [id])
+  courseid    String
+
+  @@map("user_course")
+}
+
+model Cupons {
+  id          String   @id @default(uuid())
+  percent     Float
+  initialDate DateTime
+  expireDate  DateTime
+
+  CuponsByCourse CuponsByCourse[]
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @default(now())
+  Purchases      Purchases[]
+
+  @@map("cupons")
+}
+
+model CuponsByCourse {
+  id         String   @id @default(uuid())
+  cupom      Cupons   @relation(fields: [cupomid], references: [id])
+  cupomid    String
+  course     Courses  @relation(fields: [courseid], references: [id])
+  courseid   String
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  @@map("cupons_courses")
+}
+
+model Purchases {
+  id         String         @id @default(uuid())
+  course     Courses        @relation(fields: [courseid], references: [id])
+  courseid   String
+  status     StatusPurchase @relation(fields: [statusid], references: [id])
+  statusid   String
+  cupom      Cupons         @relation(fields: [cupomid], references: [id])
+  cupomid    String
+  created_at DateTime       @default(now())
+  updated_at DateTime       @default(now())
+  user       User           @relation(fields: [userid], references: [id])
+  userid     String
+
+  @@map("purchases")
+}
+
+model StatusPurchase {
   id         String   @id @default(uuid())
   name       String   @unique
   created_at DateTime @default(now())
-  Room       Room[]
+  updated_at DateTime @default(now())
 
-  @@map("type_room")
-}
+  Purchases Purchases[]
 
-model Room {
-  id          String        @id @default(uuid())
-  name        String
-  info        String
-  status      String        @default("aberto")
-  typeRoom_id TypeRoom      @relation(fields: [typeRoomId], references: [id], onDelete: Cascade)
-  typeRoomId  String
-  created_at  DateTime      @default(now())
-  Reservation Reservation[]
-
-  @@map("room")
-}
-
-model Item {
-  id          String        @id @default(uuid())
-  name        String        @unique
-  info        String
-  price       Float
-  url         String?
-  created_at  DateTime      @default(now())
-  accountId   String?
-  AccountItem AccountItem[]
-
-  @@map("item")
-}
-
-model Reservation {
-  id         String    @id @default(uuid())
-  user_id    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
-  room_id    Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  roomId     String
-  entryDate  DateTime
-  exitDate   DateTime
-  status     String
-  created_at DateTime  @default(now())
-  CheckIn    CheckIn[]
-  CheckOut   CheckOut?
-
-  @@map("reservation")
-}
-
-model CheckIn {
-  id             String      @id @default(uuid())
-  id_reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
-  reservationId  String      @unique
-  Account        Account[]
-
-  @@map("checkin")
-}
-
-model CheckOut {
-  id             String      @id @default(uuid())
-  id_reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
-  reservationId  String      @unique
-
-  @@map("checkout")
-}
-
-model Parameters {
-  id               String @id @default(uuid())
-  email            String
-  password         String
-  maxReserve       Int
-  maxDaysOfReserve Int
-
-  @@map("parameters")
-}
-
-model Account {
-  id         String        @id @default(uuid())
-  id_checkin CheckIn       @relation(fields: [checkInId], references: [id], onDelete: Cascade)
-  checkInId  String        @unique
-  items      AccountItem[]
-  roomValue  Float
-  status     String
-  total      Float?
-  creted_at  DateTime      @default(now())
-
-  @@map("account")
-}
-
-model AccountItem {
-  id        String   @id @default(uuid())
-  item_id   Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  itemId    String
-  value     Float
-  Account   Account? @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  accountId String?
-
-  @@map("account_item")
+  @@map("status_purchase")
 }

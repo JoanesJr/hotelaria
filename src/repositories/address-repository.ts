@@ -1,10 +1,10 @@
-import { Address, Prisma } from '@prisma/client';
+import { Prisma,  Address } from '@prisma/client';
 
 export interface AddressRepository {
-    findById(id: string): Promise<Address | null>
-    findAll(): Promise<Address[] | null>
-    create(data: Prisma.AddressCreateInput | { street: string, neighborhood: string, userId: string, cep: string }): Promise<Address | { id: string, street: string, neighborhood: string, userId: string, created_at: Date, cep: string }>
-    findByUser(id_user: string): Promise<Address | null>
-    delete(id: string): Promise<Address>;
-    update(id: string, data: Prisma.UserUpdateInput | { street?: string, neighborhood?: string, userId?: string, cep?: string }): Promise<Address>
+    findById(id: string): Promise< Address | null>
+    findByUser(userId: string): Promise<Address | null>
+    findAll(): Promise< Address[] | null>
+    create(data: Prisma.AddressCreateInput): Promise< Address>
+    delete(id: string): Promise< Address>;
+    update(id: string, data: Prisma.AddressUpdateInput): Promise<Address>
 }
