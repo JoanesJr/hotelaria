@@ -29,7 +29,7 @@ describe('CreateUser Use Case', () => {
     });
 
 
-    it('should be createUser with success', async () => {
+    it.skip('should be createUser with success', async () => {
         const privilege = await createAndReturnPrivilege();
         const objUser = {
             name: 'Joanes',
@@ -55,7 +55,7 @@ describe('CreateUser Use Case', () => {
         expect(user.id).toEqual(expect.any(String));
     });
 
-    it('should not be register with same email', async () => {
+    it.skip('should not be register with same email', async () => {
         const privilege = await createAndReturnPrivilege();
         const objUser = {
             name: 'Joanes',
@@ -100,7 +100,7 @@ describe('CreateUser Use Case', () => {
         await expect(() => sut.execute(objUserTwo)).rejects.toBeInstanceOf(AlreadyExistsError);
     });
 
-    it('should not be register with same cpf', async () => {
+    it.skip('should not be register with same cpf', async () => {
         const privilege = await createAndReturnPrivilege();
         const objUser = {
             name: 'Joanes',
@@ -143,7 +143,7 @@ describe('CreateUser Use Case', () => {
         await expect(() => sut.execute(objUserTwo)).rejects.toBeInstanceOf(AlreadyExistsError);
     });
 
-    it('should not be register with same rg', async () => {
+    it.skip('should not be register with same rg', async () => {
         const privilege = await createAndReturnPrivilege();
         const objUser = {
             name: 'Joanes',

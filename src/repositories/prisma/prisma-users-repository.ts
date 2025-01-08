@@ -107,9 +107,6 @@ export class PrismaUsersRepository implements UsersRepository {
             where: {
                 id
             },
-            include: {
-                address: true
-            }
         });
 
         return user;
