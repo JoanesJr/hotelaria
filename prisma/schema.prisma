@@ -30,7 +30,7 @@ model User {
   updated_at     DateTime         @default(now())
 
   UserCourses UserCourses[]
-  Purchases   Purchases[]
+  Signatures  Signatures[]
 
   @@map("users")
 }
@@ -60,20 +60,18 @@ model Privilege {
 }
 
 model Courses {
-  id             String           @id @default(uuid())
-  name           String           @unique
-  price          Float
-  trailer        String?
-  capa           String?
-  active         Boolean          @default(false)
-  category       CourseCategories @relation(fields: [category_id], references: [id])
-  category_id    String
-  modules        ModulesCourses[]
-  created_at     DateTime         @default(now())
-  updated_at     DateTime         @default(now())
-  UserCourses    UserCourses[]
-  CuponsByCourse CuponsByCourse[]
-  Purchases      Purchases[]
+  id          String           @id @default(uuid())
+  name        String           @unique
+  price       Float
+  trailer     String?
+  capa        String?
+  active      Boolean          @default(false)
+  category    CourseCategories @relation(fields: [category_id], references: [id])
+  category_id String
+  modules     ModulesCourses[]
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @default(now())
+  UserCourses UserCourses[]
 
   @@map("courses")
 }
@@ -165,55 +163,32 @@ model UserCourses {
   @@map("user_course")
 }
 
-model Cupons {
-  id          String   @id @default(uuid())
-  percent     Float
-  initialDate DateTime
-  expireDate  DateTime
-
-  CuponsByCourse CuponsByCourse[]
-  created_at     DateTime         @default(now())
-  updated_at     DateTime         @default(now())
-  Purchases      Purchases[]
-
-  @@map("cupons")
+model Plains {
+  id              String   @id @default(uuid())
+  name            String
+  price_vista     Float
+  price_parcelado Float
+  active          Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now())
 }
 
-model CuponsByCourse {
-  id         String   @id @default(uuid())
-  cupom      Cupons   @relation(fields: [cupomid], references: [id])
-  cupomid    String
-  course     Courses  @relation(fields: [courseid], references: [id])
-  courseid   String
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
-
-  @@map("cupons_courses")
-}
-
-model Purchases {
+model Signatures {
   id         String         @id @default(uuid())
-  course     Courses        @relation(fields: [courseid], references: [id])
-  courseid   String
-  status     StatusPurchase @relation(fields: [statusid], references: [id])
-  statusid   String
-  cupom      Cupons         @relation(fields: [cupomid], references: [id])
-  cupomid    String
+  user       User           @relation(fields: [userId], references: [id])
+  userId     String
   created_at DateTime       @default(now())
-  updated_at DateTime       @default(now())
-  user       User           @relation(fields: [userid], references: [id])
-  userid     String
-
-  @@map("purchases")
+  status     StatusPurchase @relation(fields: [statusId], references: [id])
+  statusId   String
+  expiresIn  DateTime
 }
 
 model StatusPurchase {
-  id         String   @id @default(uuid())
-  name       String   @unique
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
-
-  Purchases Purchases[]
+  id         String       @id @default(uuid())
+  name       String       @unique
+  created_at DateTime     @default(now())
+  updated_at DateTime     @default(now())
+  Signatures Signatures[]
 
   @@map("status_purchase")
 }
